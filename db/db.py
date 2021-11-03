@@ -428,7 +428,7 @@ if __name__ == '__main__':
 	import pprint
 
 	config = {
-		'path': 'mongodb://sakurazaki:ThisIsKimin0koto_@localhost:27017/?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false',
+		'path': 'mongodb://sakurazaki:testpasswd@localhost:27017/?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false',
 		'db_name': 'moon2web'
 	}
 
