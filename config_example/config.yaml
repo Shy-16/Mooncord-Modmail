@@ -1,0 +1,15 @@
+# YAML
+discord:
+  application_id: 559682864241967124
+  permissions: 268560454
+  default_command_character: '=!'
+
+database:
+  path: 'mongodb://<username>:<password>@localhost:27017/?authSource=admin&readPreference=primary&ssl=false'
+  db_name: 'moon2web'
+
+modmail:
+  public_url: 'http://localhost:80'
+  api_uri: 'http://localhost:80'
+  api_key: '958c3c3bedcc4ed434295709c27f412e6dc3ac6e7e503735c81e4ebd85390f53'
+  default_command_character: '='
