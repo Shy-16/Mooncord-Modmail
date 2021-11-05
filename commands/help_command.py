@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import interactions
+import discord
 
-async def help_command(bot: interactions.Client, message: interactions.api.models.message.Message, params: list) -> None:
+async def help_command(bot: discord.Client, ctx: discord.Context, params: list) -> None:
 	
 	fields = [
 		{
@@ -23,12 +23,12 @@ async def help_command(bot: interactions.Client, message: interactions.api.model
 
 	footer = {"text": f'{bot.default_guild["name"]} Mod Team'}
 
-	await bot.send_embed_dm(message.author.id,
+	await bot.send_embed_dm(ctx.author['id'],
 							title="Modmail Help",
 							description="These are the commands for Moderation Team.", 
 							color=0x6658ff, fields=fields, footer=footer)
 
-async def help_dm_command(bot: interactions.Client, message: interactions.api.models.message.Message, params: list) -> None:
+async def help_dm_command(bot: discord.Client, ctx: discord.Context, params: list) -> None:
 	
 	fields = [
 		{
@@ -41,30 +41,32 @@ async def help_dm_command(bot: interactions.Client, message: interactions.api.mo
 		},
 		{
 		  "name": 'Right click a message and select apps -> modmail',
-		  "value": 'You can directly report a message by right clicking over it and then following the interface to modmail. It will embed the message as the ticket information.'
+		  "value": 'You can directly report a message by right clicking over it and then following the interface to modmail. '\
+		  	'It will embed the message as the ticket information.'
 		},
 		{
 		  "name": 'Additional Information',
-		  "value": "If you'd like to add attachments for the Mod team to review, you can do it from Direct Messages. The attachment will be properly added to the ticket and conveyed for the mod team to review."
+		  "value": "If you'd like to add attachments for the Mod team to review, you can do it from Direct Messages. "\
+		  	"The attachment will be properly added to the ticket and conveyed for the mod team to review."
 		}
 	]
 
 	footer = {"text": f'{bot.default_guild["name"]} Mod Team'}
 
-	await bot.send_embed_dm(message.author.id,
+	await bot.send_embed_dm(ctx.author['id'],
 							title="Modmail Help",
 							description="This is the Mooncord moderation ticketing system.\r\n\
 							If you'd like to create a new ticket follow one of the following methods.", 
 							color=0x6658ff, fields=fields, footer=footer)
 
-def setup(bot: interactions.Client):
+def setup(bot: discord.Client):
 	@bot.command(
 		type=1,
 		name="help",
 		description="Check Modmail help information.",
 		scope=int(bot.config['discord']['default_server_id'])
 	)
-	async def handle_help_slash(ctx: interactions.context.Context) -> None:
+	async def handle_help_slash(ctx: discord.Context) -> None:
 		# ctx: 'application_id', 'author', 'channel', 'channel_id', 'data', 'guild_id', 'id', 'message', 'send', 'token', 'type', 'user'
 		# ctx.message = None
 		# ctx.channel = None

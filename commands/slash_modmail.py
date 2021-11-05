@@ -2,10 +2,10 @@
 
 import asyncio
 
-import interactions
-from interactions.enums import OptionType
+import discord
+from discord.enums import OptionType
 
-def setup(bot: interactions.Client):
+def setup(bot: discord.Client):
 	@bot.command(
 		type=1,
 		name="modmail",
@@ -13,7 +13,7 @@ def setup(bot: interactions.Client):
 		scope=int(bot.config['discord']['default_server_id']),
 		options=[{"name":"description", "description":"Description of the ticket", "required":True, "type":OptionType.STRING}]
 	)
-	async def handle_modmail_slash(ctx: interactions.context.Context) -> None:
+	async def handle_modmail_slash(ctx: discord.InteractionContext) -> None:
 		# ctx: 'application_id', 'channel_id', 'data', 'guild_id', 'id', 'member', 'send', 'token', 'type', 'version'
 		# ctx.member: {'user': {'username': 'yuigahamayui', 'public_flags': 128, 'id': '539881999926689829', 'discriminator': '7441', 'avatar': 'f493550c33cd55aaa0819be4e9a988a6'}, 'roles': ['553472623300968448', '553456439046307841', '553482195067732000', '553454347795824650', '553483070687281163', '553882357443198986', '553482969969459214', '553985892914692117', '555747311016476693'], 'premium_since': None, 'permissions': '1099511627775', 'pending': False, 'nick': 'yui', 'mute': False, 'joined_at': '2019-03-08T05:49:16.519000+00:00', 'is_pending': False, 'deaf': False, 'avatar': None}
 		# ctx.data: {'type': 1, 'options': [{'value': 'testing again', 'type': 3, 'name': 'description'}], 'name': 'modmail', 'id': '905174418228125776'}

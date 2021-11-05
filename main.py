@@ -34,11 +34,5 @@ if __name__ == '__main__':
 	#dispatch = logging.getLogger("dispatch")
 	#dispatch.setLevel(logging.INFO)
 
-	bot = Bot()
-	bot.init(config)
-
-	#@bot.event
-	#async def on_message_reaction_add(message: interactions.api.models.message.Message):
-	#	# message: 'author', 'channel_id', 'emoji', 'message_id', 'timestamp', 'user_id'
-
+	bot = Bot(config=config)
 	bot.run(args.token)

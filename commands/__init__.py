@@ -1,6 +1,5 @@
 from .slash_modmail import setup as handle_modmail_slash
 from .context_modmail import setup as handle_modmail_context
-from .sync_commands import sync_commands
 from .create_ticket import create_ticket
 from .close_ticket import close_ticket
 from .help_command import help_dm_command

@@ -7,7 +7,6 @@ import traceback
 import logging
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
-sys.path.insert(0, 'E:/Escritorio/discord-continued')
 import discord
 
 from modmail import Modmail
@@ -19,13 +18,9 @@ log: logging.Logger = logging.getLogger("client")
 
 class Bot(discord.Client):
 
-	def __init__(self, *, loop: Optional[asyncio.AbstractEventLoop] = None, **options: Any,) -> None:
-		super().__init__(loop=loop, **options)
+	def __init__(self, *, config: dict) -> None:
+		super().__init__(intents=discord.Intents.all())
 
-		self._closed: bool = False
-		self._listeners: Dict[str, List[Tuple[asyncio.Future, Callable[..., bool]]]] = {}
-
-	def init(self, config: dict) -> None:
 		self.config = config
 		self.guild_config = dict()
 		self.default_guild = None
@@ -48,18 +43,15 @@ class Bot(discord.Client):
 		handle_help_slash(self)
 
 	async def on_ready(self, ctx):
-		guilds = await self.http.get_self_guilds()
-		# {'id': '553454168631934977', 'name': "Yui's cuties", 'icon': '61b1f08478e156279c4883b4b115f83c',
-		# 'owner': False, 'permissions': '1089683848791', 'features': []}]
 		db = Database(self.config['database'])
 
-		for guild in guilds:
-			print(f'Guild {guild["id"]} is being loaded.')
-			guild_config = db.load_server_configuration(guild, self)
-			self.guild_config[guild['id']] = guild_config
+		for guild in self.guilds:
+			print(f'Guild {guild.id} is being loaded.')
+			guild_config = db.load_server_configuration(guild.__dict__, self)
+			self.guild_config[guild.id] = guild_config
 			if self.default_guild is None: self.default_guild = guild_config
-			print(f'Guild {guild["id"]} loaded.')
-			logging.info(f'Loaded configuration for guild: {guild["id"]}.')
+			print(f'Guild {guild.id} loaded.')
+			logging.info(f'Loaded configuration for guild: {guild.id}.')
 
 		print('Finished loading all guild info.')
 		logging.info("All configuration finished.")
@@ -68,7 +60,7 @@ class Bot(discord.Client):
 		# # 'attachments', 'author', 'channel_id', 'components', 'content', 'edited_timestamp', 'embeds', 'event_name', 'flags', 'guild_id', 'id', 
 		# 'member', 'mention_everyone', 'mention_roles', 'mentions', 'nonce', 'pinned', 'referenced_message', 'send', 'timestamp', 'tts', 'type'
 
-		if message.author['id'] == self.me['id'] or hasattr(message.author, 'self'):
+		if str(message.author['id']) == str(self.user.id) or message.author.get('bot', False):
 			return
 
 		if not hasattr(message, 'guild_id'):

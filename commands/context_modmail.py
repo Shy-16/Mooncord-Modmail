@@ -2,15 +2,15 @@
 
 import asyncio
 
-import interactions
+import discord
 
-def setup(bot: interactions.Client):
+def setup(bot: discord.Client):
 	@bot.command(
 		type=3,
 		name="modmail",
 		scope=int(bot.config['discord']['default_server_id'])
 	)
-	async def handle_modmail_context(ctx: interactions.context.Context):
+	async def handle_modmail_context(ctx: discord.InteractionContext):
 		# ctx: 'application_id', 'author', 'channel', 'channel_id', 'data', 'guild_id', 'id', 'message', 'send', 'token', 'type', 'user'
 		# ctx.member['user']: {'username': 'yuigahamayui', 'public_flags': 128, 'id': '539881999926689829', 'discriminator': '7441', 'avatar': 'f493550c33cd55aaa0819be4e9a988a6'}
 		# ctx.message: None
@@ -23,8 +23,6 @@ def setup(bot: interactions.Client):
 		#        'height': 542, 'filename': 'nadeStare.png', 'content_type': 'image/png'}]
 		#    }}}
 		# ctx.data.target_id - message_id! 904551183497175080
-
-		print(ctx.data)
 
 		# Defer the message so we dont fuck up the command
 		data = {
