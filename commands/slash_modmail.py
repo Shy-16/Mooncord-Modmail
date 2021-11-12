@@ -32,7 +32,7 @@ def setup(bot: discord.Client):
 		await bot.http.create_interaction_response(token=ctx.token, application_id=ctx.id, data=data)
 
 		# First of all verify that the user has no tickets created yet.
-		ticket = await bot.modmail.get_ticket({'user_id': int(ctx.member['user']['id']), 'status': 'active'})
+		ticket = await bot.modmail.get_ticket({'user_id': ctx.member['user']['id'], 'status': 'active'})
 
 		# Make a DM channel where a notification will be sent afterwards.
 		dm_channel = await bot.http.create_dm(ctx.member['user']['id'])
@@ -136,7 +136,7 @@ def setup(bot: discord.Client):
 		entry = await bot.modmail.create_ticket_message(ticket, ctx.data['options'][0]['value'], author=ctx.member['user'])
 
 		await asyncio.sleep(1) # give 1 second for modmail to create the channel and to get modmail_channel_id
-		ticket = await bot.modmail.get_ticket({'user_id': int(ctx.member['user']['id']), 'status': 'active'})
+		ticket = await bot.modmail.get_ticket({'user_id': ctx.member['user']['id'], 'status': 'active'})
 
 		# rely information
 		embed = {

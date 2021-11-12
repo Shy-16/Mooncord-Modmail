@@ -156,7 +156,7 @@ class Modmail:
 
 		# Check for user active tickets
 		if not ticket:
-			ticket = await self.get_ticket({'modmail_channel_id': int(message.channel_id), 'status': 'active'})
+			ticket = await self.get_ticket({'modmail_channel_id': message.channel_id, 'status': 'active'})
 
 		if not ticket:
 			return
@@ -166,13 +166,14 @@ class Modmail:
 			return
 
 		# First rely the message
-		fields = [
-			{'name': f"{message.author['username']}#{message.author['discriminator']}", 'value': message.content, 'inline': False}
-		]
+		if message.content:
+			fields = [
+				{'name': f"{message.author['username']}#{message.author['discriminator']}", 'value': message.content, 'inline': False}
+			]
 
-		footer = {'text': f"{self._bot.guild_config[str(ticket['guild_id'])]['name']} · Ticket ID {ticket['_id']}"}
+			footer = {'text': f"{self._bot.guild_config[str(ticket['guild_id'])]['name']} · Ticket ID {ticket['_id']}"}
 
-		await self._bot.send_embed_dm(ticket['user_id'], "Message received", fields=fields, footer=footer)
+			await self._bot.send_embed_dm(ticket['user_id'], "Message received", fields=fields, footer=footer)
 
 		for attachment in message.attachments:
 			await self._bot.send_dm(ticket['user_id'], attachment['url'])
@@ -197,7 +198,7 @@ class Modmail:
 
 		# Check for user active tickets
 		if not ticket:
-			ticket = await self.get_ticket({'user_id': int(message.author['id']), 'status': 'active'})
+			ticket = await self.get_ticket({'user_id': message.author['id'], 'status': 'active'})
 
 		# If there is still no ticket then proceed
 		if not ticket:
@@ -263,7 +264,7 @@ class Modmail:
 					fields=fields, footer=footer)
 
 				await asyncio.sleep(1) # give 1 second for modmail to create the channel and to get modmail_channel_id
-				ticket = await self.get_ticket({'user_id': int(ticket_message.author['id']), 'status': 'active'})
+				ticket = await self.get_ticket({'user_id': ticket_message.author['id'], 'status': 'active'})
 
 				# rely information
 				embed = {

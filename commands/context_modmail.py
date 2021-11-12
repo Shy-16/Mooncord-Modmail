@@ -11,18 +11,7 @@ def setup(bot: discord.Client):
 		scope=int(bot.config['discord']['default_server_id'])
 	)
 	async def handle_modmail_context(ctx: discord.InteractionContext):
-		# ctx: 'application_id', 'author', 'channel', 'channel_id', 'data', 'guild_id', 'id', 'message', 'send', 'token', 'type', 'user'
-		# ctx.member['user']: {'username': 'yuigahamayui', 'public_flags': 128, 'id': '539881999926689829', 'discriminator': '7441', 'avatar': 'f493550c33cd55aaa0819be4e9a988a6'}
-		# ctx.message: None
-		# ctx.data.resolved {'messages': {'904551183497175080': {'type': 0, 'tts': False, 'timestamp': '2021-11-01T02:03:27.894000+00:00', 'pinned': False, 
-		#    'mentions': [], 'mention_roles': [], 'mention_everyone': False, 'id': '904551183497175080', 'flags': 0, 'embeds': [], 'edited_timestamp': None, 
-		#    'content': '', 'components': [], 'channel_id': '593048383405555725', 'author': {'username': 'yuigahamayui', 'public_flags': 128, 
-		#    'id': '539881999926689829', 'discriminator': '7441', 'avatar': 'f493550c33cd55aaa0819be4e9a988a6'}, 
-		#    'attachments': [{'width': 573, 'url': 'https://cdn.discordapp.com/attachments/593048383405555725/904551183270686770/nadeStare.png', 'size': 510143, 
-		#        'proxy_url': 'https://media.discordapp.net/attachments/593048383405555725/904551183270686770/nadeStare.png', 'id': '904551183270686770', 
-		#        'height': 542, 'filename': 'nadeStare.png', 'content_type': 'image/png'}]
-		#    }}}
-		# ctx.data.target_id - message_id! 904551183497175080
+		# ctx: 'application_id', 'channel_id', 'data', 'guild_id', 'id', 'member', 'send', 'token', 'type', 'version'
 
 		# Defer the message so we dont fuck up the command
 		data = {
@@ -38,7 +27,7 @@ def setup(bot: discord.Client):
 		await bot.http.create_interaction_response(token=ctx.token, application_id=ctx.id, data=data)
 
 		# First of all verify that the user has no tickets created yet.
-		ticket = await bot.modmail.get_ticket({'user_id': int(ctx.member['user']['id']), 'status': 'active'})
+		ticket = await bot.modmail.get_ticket({'user_id': ctx.member['user']['id'], 'status': 'active'})
 
 		# Make a DM channel where a notification will be sent afterwards.
 		dm_channel = await bot.http.create_dm(ctx.member['user']['id'])
@@ -173,7 +162,7 @@ def setup(bot: discord.Client):
 				attachments=target_message.get("attachments", list()), author=ctx.member['user'])
 
 		await asyncio.sleep(2) # give 2 seconds for modmail to create the channel and to get modmail_channel_id
-		ticket = await bot.modmail.get_ticket({'user_id': int(ctx.member['user']['id']), 'status': 'active'})
+		ticket = await bot.modmail.get_ticket({'user_id': ctx.member['user']['id'], 'status': 'active'})
 
 		# rely information
 		has_video = False

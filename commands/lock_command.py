@@ -6,7 +6,7 @@ async def lock_ticket(bot: discord.Client, ctx: discord.Context, params: list) -
 	# 'attachments', 'author', 'channel_id', 'components', 'content', 'edited_timestamp', 'embeds', 'flags',
 	# 'guild_id', 'id', 'member', 'mention_everyone', 'mention_roles', 'mentions', 'nonce', 'pinned', 'referenced_message', 'timestamp', 'tts', 'type'
 
-	ticket = await bot.modmail.get_ticket({'modmail_channel_id': int(ctx.channel_id)})
+	ticket = await bot.modmail.get_ticket({'modmail_channel_id': ctx.channel_id})
 	channel = await bot.http.get_channel(ctx.channel_id)
 
 	# if we didnt get a ticket maybe try from channel name?
@@ -29,7 +29,7 @@ async def unlock_ticket(bot: discord.Client, ctx: discord.Context, params: list)
 	# 'attachments', 'author', 'channel_id', 'components', 'content', 'edited_timestamp', 'embeds', 'flags',
 	# 'guild_id', 'id', 'member', 'mention_everyone', 'mention_roles', 'mentions', 'nonce', 'pinned', 'referenced_message', 'timestamp', 'tts', 'type'
 
-	ticket = await bot.modmail.get_ticket({'modmail_channel_id': int(ctx.channel_id)})
+	ticket = await bot.modmail.get_ticket({'modmail_channel_id': ctx.channel_id})
 	channel = await bot.http.get_channel(ctx.channel_id)
 
 	# if we didnt get a ticket maybe try from channel name?

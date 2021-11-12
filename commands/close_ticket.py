@@ -3,7 +3,7 @@
 import discord
 
 async def close_ticket(bot: discord.Client, ctx: discord.Context, params: list) -> None:
-	# 'attachments', 'author', 'channel_id', 'components', 'content', 'edited_timestamp', 'embeds', 'flags',
+	# 'attachments', 'author', 'channel_id', 'components', 'content', 'edited_timestamp', 'embeds', 'event_name', 'flags', 
 	# 'guild_id', 'id', 'member', 'mention_everyone', 'mention_roles', 'mentions', 'nonce', 'pinned', 'referenced_message', 'timestamp', 'tts', 'type'
 
 	ticket = await bot.modmail.get_ticket({'modmail_channel_id': int(ctx.channel_id)})
