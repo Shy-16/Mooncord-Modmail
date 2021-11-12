@@ -9,7 +9,6 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import interactions
 from pymongo import MongoClient
-import bson
 from bson.objectid import ObjectId
 
 log = logging.getLogger(__name__)
@@ -66,7 +65,7 @@ class Database:
 
 		for arg in params:
 			if isinstance(params[arg], int):
-				params[arg] = bson.Int64(params[arg])
+				params[arg] = params[arg]
 
 			if arg == "_id":
 				params[arg] = ObjectId(params[arg])
@@ -77,7 +76,7 @@ class Database:
 			return None
 
 		col = self._db['modmail_users']
-		ticket['user'] = col.find_one({'discord_id': bson.Int64(ticket['user_id'])})
+		ticket['user'] = col.find_one({'discord_id': ticket['user_id']})
 
 		return ticket
 
@@ -95,15 +94,15 @@ class Database:
 		"""
 
 		col = self._db['modmail_tickets']
-		ticket = col.find_one({'user_id': bson.Int64(user['id']), 'status': 'active'})
+		ticket = col.find_one({'user_id': user['id'], 'status': 'active'})
 
 		if ticket is None:
 			ticket = {
-				'user_id': bson.Int64(user['id']),
+				'user_id': user['id'],
 				'status': 'active',
-				'channel_id': bson.Int64(dm_channel_id),
-				'original_channel_id': bson.Int64(channel_id) if channel_id else None,
-				'guild_id': bson.Int64(guild_id),
+				'channel_id': dm_channel_id,
+				'original_channel_id': channel_id if channel_id else None,
+				'guild_id': guild_id,
 				'created_date': datetime.now().isoformat(),
 				'updated_date': datetime.now().isoformat(),
 				'closed_date': None,
@@ -117,12 +116,12 @@ class Database:
 			ticket['_id'] = result.inserted_id
 
 		col = self._db['modmail_users']
-		mm_user = col.find_one({'discord_id': bson.Int64(user['id'])})
+		mm_user = col.find_one({'discord_id': user['id']})
 
 		if mm_user is None:
 
 			mm_user = {
-				'discord_id': bson.Int64(user['id']),
+				'discord_id': user['id'],
 				'username': user['username'],
 				'username_handle': user['discriminator'],
 				'avatar': user['avatar'],
@@ -150,11 +149,11 @@ class Database:
 
 		col = self._db['modmail_users']
 
-		user = col.find_one({'discord_id': bson.Int64(author['id'])})
+		user = col.find_one({'discord_id': author['id']})
 
 		if user is None:
 			user = {
-				'discord_id': bson.Int64(author['id']),
+				'discord_id': author['id'],
 				'username': user['username'],
 				'username_handle': user['discriminator'],
 				'avatar': user['avatar'],
@@ -168,7 +167,7 @@ class Database:
 		col = self._db['modmail_history']
 		entry = {
 			'ticket_id': ObjectId(ticket['_id']),
-			'user_id': bson.Int64(author['id']),
+			'user_id': author['id'],
 			'message': content,
 			'attachments': list(),
 			'created_date': datetime.now().isoformat(),
@@ -244,7 +243,7 @@ class Database:
 
 		data['updated_date'] = datetime.now().isoformat()
 		data['closed_date'] = datetime.now().isoformat()
-		data['closed_user_id'] = bson.Int64(author_id)
+		data['closed_user_id'] = author_id
 		data['status'] = 'closed'
 
 		result = col.find_one_and_update({'_id': ObjectId(ticket_id)}, {"$set" : data })
@@ -263,7 +262,7 @@ class Database:
 
 		col = self._db['discord_config']
 
-		guild_info = col.find_one({'guild_id': bson.Int64(guild['id'])})
+		guild_info = col.find_one({'guild_id': guild['id']})
 
 		if guild_info is None:
 
@@ -275,10 +274,10 @@ class Database:
 
 			for role in full_info['roles']:
 				if role['permissions'] & 0x0000000008 == 0x0000000008:
-					admin_roles.append(bson.Int64(role['id']))
+					admin_roles.append(role['id'])
 
 			guild_info = {
-				'guild_id': bson.Int64(guild['id']),
+				'guild_id': guild['id'],
 				'name': guild['name'],
 				'command_character': bot.config['discord']['default_command_character'],
 				'modmail_character': bot.config['modmail']['default_command_character'],
