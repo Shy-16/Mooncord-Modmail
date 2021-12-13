@@ -279,10 +279,10 @@ class Modmail:
 					}
 				}
 
-				await self._bot.http.send_message(ticket['channel_id'], '', embed=embed)
+				await self._bot.http.send_message(ticket['modmail_channel_id'], '', embed=embed)
 
 				for attachment in ticket_message.attachments:
-					await self._bot.send_message(ticket['channel_id'], attachment['url'])
+					await self._bot.send_message(ticket['modmail_channel_id'], attachment['url'])
 
 				# add a new entry to history of ticket
 				entry = await self.create_ticket_message(ticket, ticket_message.content, author=ticket_message.author)
@@ -305,10 +305,10 @@ class Modmail:
 			}
 		}
 
-		await self._bot.http.send_message(ticket['channel_id'], '', embed=embed)
+		await self._bot.http.send_message(ticket['modmail_channel_id'], '', embed=embed)
 
 		for attachment in message.attachments:
-			await self._bot.send_message(ticket['channel_id'], attachment['url'])
+			await self._bot.send_message(ticket['modmail_channel_id'], attachment['url'])
 
 		# add a new entry to history of ticket
 		entry = await self.create_ticket_message(ticket, message.content, author=message.author)
