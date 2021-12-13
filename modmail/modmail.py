@@ -59,7 +59,7 @@ class Modmail:
 										source=source)
 
 		# Publish ticket to API to take care of the heavy stuff like creating a new channel.
-		response = do_api_call(self.API_URI + POST_PUBLISH_TICKET % str(ticket['_id']), self.API_KEY, method="POST")
+		responsemodmai = do_api_call(self.API_URI + POST_PUBLISH_TICKET % str(ticket['_id']), self.API_KEY, method="POST")
 
 		return ticket
 
@@ -156,7 +156,7 @@ class Modmail:
 
 		# Check for user active tickets
 		if not ticket:
-			ticket = await self.get_ticket({'modmail_channel_id': message.channel_id, 'status': 'active'})
+			ticket = await self.get_ticket({'channel_id': message.channel_id, 'status': 'active'})
 
 		if not ticket:
 			return
@@ -279,10 +279,10 @@ class Modmail:
 					}
 				}
 
-				await self._bot.http.send_message(ticket['modmail_channel_id'], '', embed=embed)
+				await self._bot.http.send_message(ticket['channel_id'], '', embed=embed)
 
 				for attachment in ticket_message.attachments:
-					await self._bot.send_message(ticket['modmail_channel_id'], attachment['url'])
+					await self._bot.send_message(ticket['channel_id'], attachment['url'])
 
 				# add a new entry to history of ticket
 				entry = await self.create_ticket_message(ticket, ticket_message.content, author=ticket_message.author)
@@ -305,10 +305,10 @@ class Modmail:
 			}
 		}
 
-		await self._bot.http.send_message(ticket['modmail_channel_id'], '', embed=embed)
+		await self._bot.http.send_message(ticket['channel_id'], '', embed=embed)
 
 		for attachment in message.attachments:
-			await self._bot.send_message(ticket['modmail_channel_id'], attachment['url'])
+			await self._bot.send_message(ticket['channel_id'], attachment['url'])
 
 		# add a new entry to history of ticket
 		entry = await self.create_ticket_message(ticket, message.content, author=message.author)
