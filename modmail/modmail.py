@@ -156,7 +156,7 @@ class Modmail:
 
 		# Check for user active tickets
 		if not ticket:
-			ticket = await self.get_ticket({'channel_id': message.channel_id, 'status': 'active'})
+			ticket = await self.get_ticket({'modmail_channel_id': message.channel_id, 'status': 'active'})
 
 		if not ticket:
 			return
