@@ -34,10 +34,10 @@ async def close_ticket(bot: discord.Client, ctx: discord.Context, params: list) 
 		"text": f"{bot.guild_config[ctx.guild_id]['name']} · Ticket ID {ticket['_id']}"
 	}
 
-        try:
-                await bot.send_embed_dm(ticket['user_id'], "Ticket closed", f"Ticket {ticket['_id']} was closed.", color=10038562, fields=fields, footer=footer)
-        except:
-                pass
+	try:
+		await bot.send_embed_dm(ticket['user_id'], "Ticket closed", f"Ticket {ticket['_id']} was closed.", color=10038562, fields=fields, footer=footer)
+	except:
+		pass
 	await bot.send_embed_message(bot.guild_config[ctx.guild_id]['modmail_channel'], "Ticket closed", f"Ticket {ticket['_id']} was closed.", color=10038562, fields=fields, footer=footer)
 
 	await bot.http.delete_channel(ctx.channel_id)
