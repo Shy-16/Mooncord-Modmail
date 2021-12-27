@@ -154,9 +154,9 @@ class Database:
 		if user is None:
 			user = {
 				'discord_id': author['id'],
-				'username': user['username'],
-				'username_handle': user['discriminator'],
-				'avatar': user['avatar'],
+				'username': author['username'],
+				'username_handle': author['discriminator'],
+				'avatar': author['avatar'],
 				'created_date': datetime.now().isoformat(),
 				'updated_date': datetime.now().isoformat()
 			}
