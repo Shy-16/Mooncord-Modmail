@@ -8,8 +8,9 @@ async def setup_ticket_button(bot: discord.Client, ctx: discord.Context, params:
 	# 'guild_id', 'id', 'member', 'mention_everyone', 'mention_roles', 'mentions', 'nonce', 'pinned', 'referenced_message', 'timestamp', 'tts', 'type'
 
 	# Setup the message
-	content = "To create a message react with 📩\r\n\
-	Please note that you should not be creating a ticket unless it is necessary, and you will be punished for making meme tickets."
+	content = "To create a message react with 📩\r\n\r\n\
+	Please not that you should only make tickets with a good reason\r\n\
+	and that meme Modmails will result in an infraction."
 	footer = {
 		"text": f"{bot.guild_config[ctx.guild_id]['name']} · Mod Team"
 	}
@@ -47,7 +48,7 @@ def setup(bot: discord.Client):
 			"custom_id": "modmail_topic",
 			"label": "Ticket Topic",
 			"style": 2,
-			"min_length": 24,
+			"min_length": 1,
 			"max_length": 2000,
 			"placeholder": "Please state the issue you'd like to report",
 			"required": True
