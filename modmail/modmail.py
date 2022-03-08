@@ -6,7 +6,7 @@
 import asyncio
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-import interactions
+import discord
 
 from .api_connector import do_api_call
 from .api_endpoints import POST_PUBLISH_TICKET, POST_PUBLISH_MESSAGE
@@ -14,9 +14,9 @@ from database import Database
 
 class Modmail:
 
-	def __init__(self, bot: interactions.Client) -> None:
+	def __init__(self, bot: discord.Client) -> None:
 		"""
-		@bot: interactions.Client
+		@bot: discord.Client
 		"""
 		self._bot = bot
 		self.PUBLIC_URL = bot.config['modmail']['public_url']
@@ -145,12 +145,12 @@ class Modmail:
 
 		return ticket
 
-	async def handle_message(self, message: interactions.api.models.message.Message, ticket: dict = None) -> None:
+	async def handle_message(self, message: discord.Context, ticket: dict = None) -> None:
 		"""
 		Handles a new message sent to the bot that didnt fall into any command category
 		and was written in a public channel, not in DMs
 
-		@message: interactions.api.models.message.Message
+		@message: discord.Context
 		@ticket: dict: Ticket info if there is any from previous steps
 		"""
 
@@ -184,11 +184,11 @@ class Modmail:
 		# finally, react to show we sent message properly.
 		await self._bot.http.create_reaction(message.channel_id, message.id, "✅")
 
-	async def handle_dm_message(self, message: interactions.api.models.message.Message, ticket: dict = None) -> None:
+	async def handle_dm_message(self, message: discord.Context, ticket: dict = None) -> None:
 		"""
 		Handles a new DM sent to the bot that didnt fall into any command category
 
-		@message: interactions.api.models.message.Message
+		@message: discord.Context
 		@ticket: dict: Ticket info if there is any from previous steps
 		"""
 
@@ -208,7 +208,7 @@ class Modmail:
 			await self._bot.http.create_reaction(request_message['channel_id'], request_message['id'], "✅")
 			await self._bot.http.create_reaction(request_message['channel_id'], request_message['id'], "⛔")
 			
-			def check(event_message: interactions.api.models.message.Message) -> bool:
+			def check(event_message: discord.Context) -> bool:
 				return event_message.user_id == message.author['id'] and (event_message.emoji['name'] == "✅" or event_message.emoji['name'] == "⛔")
 
 			reaction_message = None
@@ -230,7 +230,7 @@ class Modmail:
 				self._pending_interaction.append(message.author['id'])
 				await self._bot.send_dm(message.author['id'], "Please explain the issue that you'd like to report:")
 
-				def modmaiL_wait_for_dm_reply(event_message: interactions.api.models.message.Message) -> bool:
+				def modmaiL_wait_for_dm_reply(event_message: discord.Context) -> bool:
 					return event_message.author['id'] == message.author['id']
 
 				ticket_message = None

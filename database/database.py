@@ -7,7 +7,7 @@ import logging
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-import interactions
+import discord
 from pymongo import MongoClient
 from bson.objectid import ObjectId
 
@@ -251,7 +251,7 @@ class Database:
 		return result
 
 	# Server configuration for start up
-	def load_server_configuration(self, guild: dict, bot: interactions.Client):
+	async def load_server_configuration(self, guild: dict, bot: discord.Client):
 		"""
 		Given a guild, load its configuration
 
@@ -267,13 +267,13 @@ class Database:
 		if guild_info is None:
 
 			# get all server info
-			full_info = bot.http.get_guild(guild['id'])
+			full_info = await bot.http.get_guild(guild['id'])
 
 			# Get default admin roles
 			admin_roles = []
 
 			for role in full_info['roles']:
-				if role['permissions'] & 0x0000000008 == 0x0000000008:
+				if int(role['permissions']) & 0x0000000008 == 0x0000000008:
 					admin_roles.append(role['id'])
 
 			guild_info = {

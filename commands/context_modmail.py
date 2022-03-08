@@ -50,8 +50,8 @@ def setup(bot: discord.Client):
 				"color": 0x0aeb06,
 				"fields": [],
 				"footer": {
-					"text": f"{ctx.member['user']['username']}#{ctx.member['user']['discriminator']} · Ticket ID {ticket['_id']}",
-					"icon_url": bot.build_avatar_url(ctx.member['user'])
+					"text": f"{target_message['author']['username']}#{target_message['author']['discriminator']} · Ticket ID {ticket['_id']}",
+					"icon_url": bot.build_avatar_url(target_message['author'])
 				},
 				"url": bot.build_message_url(ctx.guild_id, ctx.channel_id, ctx.data['target_id'])
 			}
@@ -174,8 +174,8 @@ def setup(bot: discord.Client):
 			"color": 0x0aeb06,
 			"fields": [],
 			"footer": {
-				"text": f"{ctx.member['user']['username']}#{ctx.member['user']['discriminator']} · Ticket ID {ticket['_id']}",
-				"icon_url": bot.build_avatar_url(ctx.member['user'])
+				"text": f"{target_message['author']['username']}#{target_message['author']['discriminator']} · Ticket ID {ticket['_id']}",
+				"icon_url": bot.build_avatar_url(target_message['author'])
 			},
 			"url": bot.build_message_url(ctx.guild_id, ctx.channel_id, ctx.data['target_id'])
 		}

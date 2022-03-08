@@ -12,7 +12,8 @@ import discord
 from modmail import Modmail
 from database import Database
 from commands import create_ticket, close_ticket, help_command, help_dm_command, lock_ticket, unlock_ticket
-from commands import handle_modmail_slash, handle_modmail_context, handle_help_slash
+from commands import handle_modmail_slash, handle_modmail_context, handle_help_slash, setup_ticket_button
+from commands import handle_create_ticket_button, handle_create_ticket_modal
 
 log: logging.Logger = logging.getLogger("client")
 
@@ -31,7 +32,8 @@ class Bot(discord.Client):
 			"help": help_command,
 			"close": close_ticket,
 			"lock": lock_ticket,
-			"unlock": unlock_ticket
+			"unlock": unlock_ticket,
+			"setup_button": setup_ticket_button
 		}
 
 		self.dm_commands = {
@@ -41,13 +43,20 @@ class Bot(discord.Client):
 		handle_modmail_slash(self)
 		handle_modmail_context(self)
 		handle_help_slash(self)
+		handle_create_ticket_button(self)
+		handle_create_ticket_modal(self)
+
+	## On error handler
+	async def on_error(self, event, err):
+		exc_err = traceback.format_exc()
+		log.error("Bot handled an error on event: {} with error:\r\n{}".format(event, exc_err))
 
 	async def on_ready(self, ctx):
 		db = Database(self.config['database'])
 
 		for guild in self.guilds:
 			print(f'Guild {guild.id} is being loaded.')
-			guild_config = db.load_server_configuration(guild.__dict__, self)
+			guild_config = await db.load_server_configuration(guild.__dict__, self)
 			self.guild_config[guild.id] = guild_config
 			if self.default_guild is None: self.default_guild = guild_config
 			print(f'Guild {guild.id} loaded.')
@@ -141,7 +150,7 @@ class Bot(discord.Client):
 		return message
 
 	async def send_embed_message(self, channel_id: int, title: str = "", description: str = "", color: int = 0x0aeb06, fields: list = list(),
-		footer: dict = None) -> dict:
+		footer: dict = None, components: Optional[list] = None) -> dict:
 		embed = {
 			"type": "rich",
 			"title": title,
@@ -153,7 +162,7 @@ class Bot(discord.Client):
 		if footer is not None:
 			embed['footer'] = footer
 
-		message = await self.http.send_message(channel_id, '', embed=embed)
+		message = await self.http.send_message(channel_id, '', embed=embed, components=components)
 
 		return message
 
