@@ -9,8 +9,7 @@ async def setup_ticket_button(bot: discord.Client, ctx: discord.Context, params:
 
 	# Setup the message
 	content = "To create a message react with 📩\r\n\r\n\
-	Please not that you should only make tickets with a good reason\r\n\
-	and that meme Modmails will result in an infraction."
+	Please refrain from using modmail to send memes.\r\nDoing so will result in a timeout and a strike."
 	footer = {
 		"text": f"{bot.guild_config[ctx.guild_id]['name']} · Mod Team"
 	}
