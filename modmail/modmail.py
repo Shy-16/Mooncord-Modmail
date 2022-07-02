@@ -12,307 +12,333 @@ from .api_connector import do_api_call
 from .api_endpoints import POST_PUBLISH_TICKET, POST_PUBLISH_MESSAGE
 from database import Database
 
+
 class Modmail:
 
-	def __init__(self, bot: discord.Client) -> None:
-		"""
-		@bot: discord.Client
-		"""
-		self._bot = bot
-		self.PUBLIC_URL = bot.config['modmail']['public_url']
-		self.API_URI = bot.config['modmail']['api_uri']
-		self.API_KEY = bot.config['modmail']['api_key']
+    def __init__(self, bot: discord.Client) -> None:
+        """
+        @bot: discord.Client
+        """
+        self._bot = bot
+        self.PUBLIC_URL = bot.config['modmail']['public_url']
+        self.API_URI = bot.config['modmail']['api_uri']
+        self.API_KEY = bot.config['modmail']['api_key']
 
-		self._db = Database(bot.config['database'])
+        self._db = Database(bot.config['database'])
 
-		self._pending_interaction = list()
+        self._pending_interaction = list()
 
-	async def get_ticket(self, params: dict) -> Union[dict, None]:
-		"""
-		Given a context get the ticket of the author, if any.
+    async def get_ticket(self, params: dict) -> Union[dict, None]:
+        """
+        Given a context get the ticket of the author, if any.
 
-		@params: dict: Parameters to filter the ticket by
+        @params: dict: Parameters to filter the ticket by
 
-		return: Union[dict: ticket, None]
-		"""
+        return: Union[dict: ticket, None]
+        """
 
-		return self._db.get_ticket(params)
+        return self._db.get_ticket(params)
 
-	async def create_ticket(self, author: dict, channel_id: Optional[int], dm_channel_id: int, guild_id: int, source: str = "dm") -> dict:
-		"""
-		Create a new ticket from the requested interaction.
+    async def create_ticket(self, author: dict, channel_id: Optional[int], dm_channel_id: int, guild_id: int, source: str = "dm") -> dict:
+        """
+        Create a new ticket from the requested interaction.
 
-		@author: dict User Data
-		@channel_id: int Channel ID
-		@dm_channel_id: int Private DM Channel ID
-		@guild_id: int Guild ID
-		@source: str Source of the ticket
+        @author: dict User Data
+        @channel_id: int Channel ID
+        @dm_channel_id: int Private DM Channel ID
+        @guild_id: int Guild ID
+        @source: str Source of the ticket
 
-		return: created ticket
-		"""
+        return: created ticket
+        """
 
-		# Create the ticket
-		ticket = self._db.create_ticket(user=author,
-										channel_id=channel_id,
-										dm_channel_id=dm_channel_id,
-										guild_id=guild_id,
-										source=source)
+        # Create the ticket
+        ticket = self._db.create_ticket(user=author,
+                                        channel_id=channel_id,
+                                        dm_channel_id=dm_channel_id,
+                                        guild_id=guild_id,
+                                        source=source)
 
-		# Publish ticket to API to take care of the heavy stuff like creating a new channel.
-		responsemodmai = do_api_call(self.API_URI + POST_PUBLISH_TICKET % str(ticket['_id']), self.API_KEY, method="POST")
+        # Publish ticket to API to take care of the heavy stuff like creating a new channel.
+        responsemodmai = do_api_call(self.API_URI + POST_PUBLISH_TICKET % str(ticket['_id']), self.API_KEY, method="POST")
 
-		return ticket
+        return ticket
 
-	async def create_ticket_message(self, ticket: dict, content: str, attachments: Optional[List[dict]] = list(), author: dict = dict()) -> dict:
-		"""
-		Create a new message for given ticket from provided context.
+    async def create_ticket_message(self, ticket: dict, content: str, attachments: Optional[List[dict]] = list(),
+                                    author: dict = dict(), mode: str = 'message') -> dict:
+        """
+        Create a new message for given ticket from provided context.
 
-		@ticket: dict: Ticket information
-		@content: str: message content
-		@attachments: List[dict]: List of attachments
-		@author: dict: author data
+        @ticket: dict: Ticket information
+        @content: str: message content
+        @attachments: List[dict]: List of attachments
+        @author: dict: author data
 
-		return: dict: New message information
-		"""
+        return: dict: New message information
+        """
 
-		# Store message in database
-		entry = self._db.create_ticket_message(ticket, content, attachments, author=author)
+        # Store message in database
+        entry = self._db.create_ticket_message(ticket, content, attachments, author=author, mode=mode)
 
-		# Publish message through API to replicate in socket.io on website.
-		data = {
-			'message': content,
-			'attachments': list(),
-			**ticket
-		}
+        if mode == 'message':
+            # Publish message through API to replicate in socket.io on website.
+            data = {
+                'message': content,
+                'attachments': list(),
+                **ticket
+            }
 
-		for att in attachments:
-			data['attachments'].append({
-				'content_type': att['content_type'],
-				'filename': att['filename'],
-				'id': att['id'],
-				'size': att['size'],
-				'url': att['url']
-			})
+            for att in attachments:
+                data['attachments'].append({
+                    'content_type': att['content_type'],
+                    'filename': att['filename'],
+                    'id': att['id'],
+                    'size': att['size'],
+                    'url': att['url']
+                })
 
-		data['_id'] = str(data['_id'])
-		data['user']['_id'] = str(data['user']['_id'])
+            data['_id'] = str(data['_id'])
+            data['user']['_id'] = str(data['user']['_id'])
 
-		response = do_api_call(self.API_URI + POST_PUBLISH_MESSAGE % str(ticket['_id']), self.API_KEY, data=data, method="POST")
+            response = do_api_call(self.API_URI + POST_PUBLISH_MESSAGE % str(ticket['_id']), self.API_KEY, data=data, method="POST")
 
-		return entry
+        return entry
 
-	async def lock_ticket(self, ticket: dict) -> dict:
-		"""
-		Locks a ticket
+    async def lock_ticket(self, ticket: dict) -> dict:
+        """
+        Locks a ticket
 
-		@ticket: dict: Ticket to close
+        @ticket: dict: Ticket to close
 
-		return: dict: Locked ticket
-		"""
+        return: dict: Locked ticket
+        """
 
-		# Close the ticket
-		ticket = self._db.lock_ticket(ticket_id=str(ticket['_id']))
+        # Close the ticket
+        ticket = self._db.lock_ticket(ticket_id=str(ticket['_id']))
 
-		return ticket
+        return ticket
 
-	async def unlock_ticket(self, ticket: dict) -> dict:
-		"""
-		Locks a ticket
+    async def unlock_ticket(self, ticket: dict) -> dict:
+        """
+        Locks a ticket
 
-		@ticket: dict: Ticket to close
+        @ticket: dict: Ticket to close
 
-		return: dict: Locked ticket
-		"""
+        return: dict: Locked ticket
+        """
 
-		# Close the ticket
-		ticket = self._db.unlock_ticket(ticket_id=str(ticket['_id']))
+        # Close the ticket
+        ticket = self._db.unlock_ticket(ticket_id=str(ticket['_id']))
 
-		return ticket
+        return ticket
 
-	async def close_ticket(self, ticket: dict, author_id: int, data: dict) -> dict:
-		"""
-		Closes a ticket
+    async def close_ticket(self, ticket: dict, author_id: int, data: dict) -> dict:
+        """
+        Closes a ticket
 
-		@ticket: dict: Ticket to close
-		@author_id: int: Closing ticket author's ID
-		@data: dict: additional data to store in database
+        @ticket: dict: Ticket to close
+        @author_id: int: Closing ticket author's ID
+        @data: dict: additional data to store in database
 
-		return: dict: Closed ticket
-		"""
+        return: dict: Closed ticket
+        """
 
-		# Close the ticket
-		ticket = self._db.close_ticket(ticket_id=str(ticket['_id']), author_id=author_id, data=data)
+        # Close the ticket
+        ticket = self._db.close_ticket(ticket_id=str(ticket['_id']), author_id=author_id, data=data)
 
-		return ticket
+        return ticket
 
-	async def handle_message(self, message: discord.Context, ticket: dict = None) -> None:
-		"""
-		Handles a new message sent to the bot that didnt fall into any command category
-		and was written in a public channel, not in DMs
+    async def handle_comment(self, message: discord.Context, ticket: dict = None) -> None:
+        """
+        Handles a new message sent to the bot that didnt fall into any command category
+        and was written in a public channel, not in DMs
 
-		@message: discord.Context
-		@ticket: dict: Ticket info if there is any from previous steps
-		"""
+        @message: discord.Context
+        @ticket: dict: Ticket info if there is any from previous steps
+        """
 
-		# Check for user active tickets
-		if not ticket:
-			ticket = await self.get_ticket({'modmail_channel_id': message.channel_id, 'status': 'active'})
+        # Check for user active tickets
+        if not ticket:
+            ticket = await self.get_ticket({'modmail_channel_id': message.channel_id, 'status': 'active'})
 
-		if not ticket:
-			return
+        if not ticket:
+            return
 
-		# if ticket is locked ignore
-		if ticket.get("locked"):
-			return
+        # then store message in database
+        entry = await self.create_ticket_message(ticket, message.content, author=message.author, mode='comment')
 
-		# First rely the message
-		if message.content:
-			fields = [
-				{'name': f"{message.author['username']}#{message.author['discriminator']}", 'value': message.content, 'inline': False}
-			]
+        # finally, react to show we sent message properly.
+        await self._bot.http.create_reaction(message.channel_id, message.id, "☑️")
 
-			footer = {'text': f"{self._bot.guild_config[str(ticket['guild_id'])]['name']} · Ticket ID {ticket['_id']}"}
+    async def handle_message(self, message: discord.Context, ticket: dict = None) -> None:
+        """
+        Handles a new message sent to the bot that didnt fall into any command category
+        and was written in a public channel, not in DMs
 
-			await self._bot.send_embed_dm(ticket['user_id'], "Message received", fields=fields, footer=footer)
+        @message: discord.Context
+        @ticket: dict: Ticket info if there is any from previous steps
+        """
 
-		for attachment in message.attachments:
-			await self._bot.send_dm(ticket['user_id'], attachment['url'])
+        # Check for user active tickets
+        if not ticket:
+            ticket = await self.get_ticket({'modmail_channel_id': message.channel_id, 'status': 'active'})
 
-		# then store message in database
-		entry = await self.create_ticket_message(ticket, message.content, author=message.author)
+        if not ticket:
+            return
 
-		# finally, react to show we sent message properly.
-		await self._bot.http.create_reaction(message.channel_id, message.id, "✅")
+        # if ticket is locked ignore
+        if ticket.get("locked"):
+            await self.handle_comment(message, ticket)
+            return
 
-	async def handle_dm_message(self, message: discord.Context, ticket: dict = None) -> None:
-		"""
-		Handles a new DM sent to the bot that didnt fall into any command category
+        # First rely the message
+        if message.content:
+            fields = [
+                {'name': f"{message.author['username']}#{message.author['discriminator']}", 'value': message.content, 'inline': False}
+            ]
 
-		@message: discord.Context
-		@ticket: dict: Ticket info if there is any from previous steps
-		"""
+            footer = {'text': f"{self._bot.guild_config[str(ticket['guild_id'])]['name']} · Ticket ID {ticket['_id']}"}
 
-		if message.author['id'] in self._pending_interaction:
-			# Message is handled by the wait_for event instead.
-			return
+            await self._bot.send_embed_dm(ticket['user_id'], "Message received", fields=fields, footer=footer)
 
-		# Check for user active tickets
-		if not ticket:
-			ticket = await self.get_ticket({'user_id': message.author['id'], 'status': 'active'})
+        for attachment in message.attachments:
+            await self._bot.send_dm(ticket['user_id'], attachment['url'])
 
-		# If there is still no ticket then proceed
-		if not ticket:
-			# Ask the user if they want to make a new ticket.
-			request_message = await self._bot.send_dm(message.author['id'], "Would you like to create a new ticket to report an issue to the Mod team?")
+        # then store message in database
+        entry = await self.create_ticket_message(ticket, message.content, author=message.author)
 
-			await self._bot.http.create_reaction(request_message['channel_id'], request_message['id'], "✅")
-			await self._bot.http.create_reaction(request_message['channel_id'], request_message['id'], "⛔")
-			
-			def check(event_message: discord.Context) -> bool:
-				return event_message.user_id == message.author['id'] and (event_message.emoji['name'] == "✅" or event_message.emoji['name'] == "⛔")
+        # finally, react to show we sent message properly.
+        await self._bot.http.create_reaction(message.channel_id, message.id, "✅")
 
-			reaction_message = None
+    async def handle_dm_message(self, message: discord.Context, ticket: dict = None) -> None:
+        """
+        Handles a new DM sent to the bot that didnt fall into any command category
 
-			try:
-				reaction_message = await self._bot.wait_for('message_reaction_add', timeout=60.0, check=check)
+        @message: discord.Context
+        @ticket: dict: Ticket info if there is any from previous steps
+        """
 
-			except asyncio.TimeoutError:
-				await self._bot.http.delete_message(request_message['channel_id'], request_message['id'])
-				await self._bot.send_dm(message.author['id'], "Time expired. Please try initiating the Ticket process again.")
-				return
+        if message.author['id'] in self._pending_interaction:
+            # Message is handled by the wait_for event instead.
+            return
 
-			await self._bot.http.delete_message(request_message['channel_id'], request_message['id'])
+        # Check for user active tickets
+        if not ticket:
+            ticket = await self.get_ticket({'user_id': message.author['id'], 'status': 'active'})
 
-			if reaction_message.emoji['name'] == "⛔":
-				return
+        # If there is still no ticket then proceed
+        if not ticket:
+            # Ask the user if they want to make a new ticket.
+            request_message = await self._bot.send_dm(message.author['id'], "Would you like to create a new ticket to report an issue to the Mod team?")
 
-			elif reaction_message.emoji['name'] == "✅":
-				self._pending_interaction.append(message.author['id'])
-				await self._bot.send_dm(message.author['id'], "Please explain the issue that you'd like to report:")
+            await self._bot.http.create_reaction(request_message['channel_id'], request_message['id'], "✅")
+            await self._bot.http.create_reaction(request_message['channel_id'], request_message['id'], "⛔")
+            
+            def check(event_message: discord.Context) -> bool:
+                return event_message.user_id == message.author['id'] and (event_message.emoji['name'] == "✅" or event_message.emoji['name'] == "⛔")
 
-				def modmaiL_wait_for_dm_reply(event_message: discord.Context) -> bool:
-					return event_message.author['id'] == message.author['id']
+            reaction_message = None
 
-				ticket_message = None
+            try:
+                reaction_message = await self._bot.wait_for('message_reaction_add', timeout=60.0, check=check)
 
-				try:
-					ticket_message = await self._bot.wait_for('message_create', check=modmaiL_wait_for_dm_reply, timeout=60.0)
+            except asyncio.TimeoutError:
+                await self._bot.http.delete_message(request_message['channel_id'], request_message['id'])
+                await self._bot.send_dm(message.author['id'], "Time expired. Please try initiating the Ticket process again.")
+                return
 
-				except asyncio.TimeoutError:
-					await self._bot.send_dm(message.author['id'], "Time expired. Please try initiating the Ticket process again.")
-					self._pending_interaction.remove(message.author['id'])
-					return
+            await self._bot.http.delete_message(request_message['channel_id'], request_message['id'])
 
-				self._pending_interaction.remove(message.author['id'])
+            if reaction_message.emoji['name'] == "⛔":
+                return
 
-				# Create the ticket
-				ticket = await self.create_ticket(author=ticket_message.author,
-											channel_id=None,
-											dm_channel_id=ticket_message.channel_id,
-											guild_id=self._bot.default_guild['guild_id'],
-											source="dm")
+            elif reaction_message.emoji['name'] == "✅":
+                self._pending_interaction.append(message.author['id'])
+                await self._bot.send_dm(message.author['id'], "Please explain the issue that you'd like to report:")
 
-				# Send information to the user
-				fields = [
-					{'name': 'Info', 'value': "Anything you type in this DM will be conveyed to the Mod Team .\r\n\r\n"+
-						"Once the Mod Team reviews your ticket they will put in contact with you through this same channel.", 'inline': False},
-				]
+                def modmaiL_wait_for_dm_reply(event_message: discord.Context) -> bool:
+                    return event_message.author['id'] == message.author['id']
 
-				footer = {"text": f'{self._bot.default_guild["name"]} Mod Team · Ticket: {ticket["_id"]}'}
+                ticket_message = None
 
-				await self._bot.send_embed_dm(ticket_message.author['id'], "Ticket created", description="Your ticket has been created.", color=0x0aeb06,
-					fields=fields, footer=footer)
+                try:
+                    ticket_message = await self._bot.wait_for('message_create', check=modmaiL_wait_for_dm_reply, timeout=60.0)
 
-				await asyncio.sleep(1) # give 1 second for modmail to create the channel and to get modmail_channel_id
-				ticket = await self.get_ticket({'user_id': ticket_message.author['id'], 'status': 'active'})
+                except asyncio.TimeoutError:
+                    await self._bot.send_dm(message.author['id'], "Time expired. Please try initiating the Ticket process again.")
+                    self._pending_interaction.remove(message.author['id'])
+                    return
 
-				# rely information
-				embed = {
-					"type": "rich",
-					"title": "Message received",
-					"description": ticket_message.content,
-					"color": 0x0aeb06,
-					"fields": [],
-					"footer": {
-						"text": f"{ticket_message.author['username']}#{ticket_message.author['discriminator']} · Ticket ID {ticket['_id']}",
-						"icon_url": self._bot.build_avatar_url(ticket_message.author)
-					}
-				}
+                self._pending_interaction.remove(message.author['id'])
 
-				await self._bot.http.send_message(ticket['modmail_channel_id'], '', embed=embed)
+                # Create the ticket
+                ticket = await self.create_ticket(author=ticket_message.author,
+                                            channel_id=None,
+                                            dm_channel_id=ticket_message.channel_id,
+                                            guild_id=self._bot.default_guild['guild_id'],
+                                            source="dm")
 
-				for attachment in ticket_message.attachments:
-					await self._bot.send_message(ticket['modmail_channel_id'], attachment['url'])
+                # Send information to the user
+                fields = [
+                    {'name': 'Info', 'value': "Anything you type in this DM will be conveyed to the Mod Team .\r\n\r\n"+
+                        "Once the Mod Team reviews your ticket they will put in contact with you through this same channel.", 'inline': False},
+                ]
 
-				# add a new entry to history of ticket
-				entry = await self.create_ticket_message(ticket, ticket_message.content, author=ticket_message.author)
+                footer = {"text": f'{self._bot.default_guild["name"]} Mod Team · Ticket: {ticket["_id"]}'}
 
-				footer = {"text": f'{self._bot.default_guild["name"]} Mod Team · Ticket: {ticket["_id"]}'}
+                await self._bot.send_embed_dm(ticket_message.author['id'], "Ticket created", description="Your ticket has been created.", color=0x0aeb06,
+                    fields=fields, footer=footer)
 
-				await self._bot.send_embed_dm(ticket_message.author['id'], "Message sent", ticket_message.content, footer=footer)
-				return
+                await asyncio.sleep(1) # give 1 second for modmail to create the channel and to get modmail_channel_id
+                ticket = await self.get_ticket({'user_id': ticket_message.author['id'], 'status': 'active'})
 
-		# rely information
-		embed = {
-			"type": "rich",
-			"title": "Message received",
-			"description": message.content,
-			"color": 0x0aeb06,
-			"fields": [],
-			"footer": {
-				"text": f"{message.author['username']}#{message.author['discriminator']} · Ticket ID {ticket['_id']}",
-				"icon_url": self._bot.build_avatar_url(message.author)
-			}
-		}
+                # rely information
+                embed = {
+                    "type": "rich",
+                    "title": "Message received",
+                    "description": ticket_message.content,
+                    "color": 0x0aeb06,
+                    "fields": [],
+                    "footer": {
+                        "text": f"{ticket_message.author['username']}#{ticket_message.author['discriminator']} · Ticket ID {ticket['_id']}",
+                        "icon_url": self._bot.build_avatar_url(ticket_message.author)
+                    }
+                }
 
-		await self._bot.http.send_message(ticket['modmail_channel_id'], '', embed=embed)
+                await self._bot.http.send_message(ticket['modmail_channel_id'], '', embed=embed)
 
-		for attachment in message.attachments:
-			await self._bot.send_message(ticket['modmail_channel_id'], attachment['url'])
+                for attachment in ticket_message.attachments:
+                    await self._bot.send_message(ticket['modmail_channel_id'], attachment['url'])
 
-		# add a new entry to history of ticket
-		entry = await self.create_ticket_message(ticket, message.content, author=message.author)
+                # add a new entry to history of ticket
+                entry = await self.create_ticket_message(ticket, ticket_message.content, author=ticket_message.author)
 
-		footer = {"text": f'{self._bot.default_guild["name"]} Mod Team · Ticket: {ticket["_id"]}'}
+                footer = {"text": f'{self._bot.default_guild["name"]} Mod Team · Ticket: {ticket["_id"]}'}
 
-		await self._bot.send_embed_dm(message.author['id'], "Message sent", message.content, footer=footer)
+                await self._bot.send_embed_dm(ticket_message.author['id'], "Message sent", ticket_message.content, footer=footer)
+                return
+
+        # rely information
+        embed = {
+            "type": "rich",
+            "title": "Message received",
+            "description": message.content,
+            "color": 0x0aeb06,
+            "fields": [],
+            "footer": {
+                "text": f"{message.author['username']}#{message.author['discriminator']} · Ticket ID {ticket['_id']}",
+                "icon_url": self._bot.build_avatar_url(message.author)
+            }
+        }
+
+        await self._bot.http.send_message(ticket['modmail_channel_id'], '', embed=embed)
+
+        for attachment in message.attachments:
+            await self._bot.send_message(ticket['modmail_channel_id'], attachment['url'])
+
+        # add a new entry to history of ticket
+        entry = await self.create_ticket_message(ticket, message.content, author=message.author)
+
+        footer = {"text": f'{self._bot.default_guild["name"]} Mod Team · Ticket: {ticket["_id"]}'}
+
+        await self._bot.send_embed_dm(message.author['id'], "Message sent", message.content, footer=footer)
