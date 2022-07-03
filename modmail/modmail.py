@@ -168,7 +168,7 @@ class Modmail:
         entry = await self.create_ticket_message(ticket, message.content, author=message.author, mode='comment')
 
         # finally, react to show we sent message properly.
-        await self._bot.http.create_reaction(message.channel_id, message.id, "☑️")
+        # await self._bot.http.create_reaction(message.channel_id, message.id, "☑️")
 
     async def handle_message(self, message: discord.Context, ticket: dict = None) -> None:
         """
