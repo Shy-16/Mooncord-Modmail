@@ -199,10 +199,22 @@ class Modmail:
 
             footer = {'text': f"{self._bot.guild_config[str(ticket['guild_id'])]['name']} · Ticket ID {ticket['_id']}"}
 
-            await self._bot.send_embed_dm(ticket['user_id'], "Message received", fields=fields, footer=footer)
+            try:
+                await self._bot.send_embed_dm(ticket['user_id'], "Message received", fields=fields, footer=footer)
+            except discord.api.exceptions.Forbidden:
+                # The user doesn't have DM's open or has blocked modmail
+                await self._bot.send_embed_message(ticket['modmail_channel_id'], "Message delivery failed",
+                     "User can't receive DMs", color=0xcc0000)
+                await self._bot.http.create_reaction(message.channel_id, message.id, "✅")
+                return
 
         for attachment in message.attachments:
-            await self._bot.send_dm(ticket['user_id'], attachment['url'])
+            try:
+                await self._bot.send_dm(ticket['user_id'], attachment['url'])
+            except discord.api.exceptions.Forbidden:
+                # we shouldn't land in this situation since we already catched
+                # it above but... just in case
+                pass
 
         # then store message in database
         entry = await self.create_ticket_message(ticket, message.content, author=message.author)
@@ -233,7 +245,7 @@ class Modmail:
 
             await self._bot.http.create_reaction(request_message['channel_id'], request_message['id'], "✅")
             await self._bot.http.create_reaction(request_message['channel_id'], request_message['id'], "⛔")
-            
+
             def check(event_message: discord.Context) -> bool:
                 return event_message.user_id == message.author['id'] and (event_message.emoji['name'] == "✅" or event_message.emoji['name'] == "⛔")
 
