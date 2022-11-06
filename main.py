@@ -1,38 +1,33 @@
 # -*- coding: utf-8 -*-
 
-import logging
-import signal
+## Main Module ##
+# Creates and runs the main script and loads all modules #
+
 import sys
 import yaml
+import logging
 
 from bot import Bot
 from utils import parse_args
 
-bot = None
 
 if __name__ == '__main__':
+    logging.basicConfig(level=logging.INFO)
 
-	args = parse_args()
-	try:
-		config_file = open('config.yaml', 'r')
-		config = yaml.load(config_file, Loader=yaml.FullLoader)
+    args = parse_args()
+    if not args.token:
+        print("You need to provide a secret token with \"--token\" or \"-t\" ")
+        sys.exit(0)
+        
+    try:
+        config_file = open('config.yaml', 'r')
+        config = yaml.load(config_file, Loader=yaml.FullLoader)
+    except FileNotFoundError:
+        print("\"config.yaml\" has to exist on root directory.")
+        sys.exit(0)
+    except IOError:
+        print("Modmail doesn't have the proper permissions to read \"config.yaml\".")
+        sys.exit(0)
 
-	except FileNotFoundError:
-		print("\"config.yaml\" has to exist on root directory.")
-		sys.exit(0)
-
-	except IOError:
-		print("Modmail doesn't have the proper permissions to read \"config.yaml\".")
-		sys.exit(0)
-
-	if(not args.token):
-		print("You need to provide a secret token with \"--token\" or \"-t\" ")
-		sys.exit(0)
-
-	#gateway = logging.getLogger("gateway")
-	#gateway.setLevel(logging.INFO)
-	#dispatch = logging.getLogger("dispatch")
-	#dispatch.setLevel(logging.INFO)
-
-	bot = Bot(config=config)
-	bot.run(args.token)
+    bot = Bot(config)
+    bot.run(token=args.token)

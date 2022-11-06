@@ -5,7 +5,7 @@
 
 import logging
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any
 
 import discord
 from pymongo import MongoClient
@@ -17,94 +17,56 @@ _connection = None
 
 
 def get_conn(path):
-    """
-    Get a DB object.
-    
-    """
-
-    # check to see if we exist already (singleton!)
-
-    global _connection   # pylint: disable=global-statement
-
+    """Get a DB object."""
+    global _connection # pylint: disable=global-statement, invalid-name
     if _connection is not None:
-        # Do cleanup if necessary
         return _connection
-
-    # create a new instance
     _connection = MongoClient(path)
-    log.info(f"Created new connection to database.")
-
+    log.info("Created new connection to database.")
     return _connection
 
 
 class Database:
-
     def __init__(self, config):
         """Create and configure a connection to database.
-
-        Provide with wrapper for database
+        Provide a wrapper for database.
         """
-
         self._db_config = config
         self._conn = get_conn(config['path'])
         self._db = self._conn[config['db_name']]
 
-    def close(self):
+    def close(self) -> None:
         """Close connection to database"""
         self._conn.close()
 
     # Ticket related
-    def get_ticket(self, params: dict) -> Union[dict, None]:
-        """
-        Given search parameters, return ticket associated to it
-
-        @params: typeof Dictionary
-
-        returns: Union[dict: ticket information, None]
-        """
-
+    def get_ticket(self, params: dict[str, Any]) -> dict[str, Any] | None:
+        """Given search parameters, return ticket associated to it"""
         col = self._db['modmail_tickets']
-
-        for arg in params:
-            if isinstance(params[arg], int):
-                params[arg] = params[arg]
-
-            if arg == "_id":
-                params[arg] = ObjectId(params[arg])
+        if "_id" in params:
+            params["_id"] = ObjectId(params["_id"])
 
         ticket = col.find_one(params)
-
         if ticket is None:
             return None
 
         col = self._db['modmail_users']
-        ticket['user'] = col.find_one({'discord_id': ticket['user_id']})
-
+        ticket['author'] = col.find_one({'discord_id': ticket['author_id']})
         return ticket
 
-    def create_ticket(self, user: dict, channel_id: Optional[int], dm_channel_id: int, guild_id: int, source: str) -> dict:
-        """
-        Given a user channel and guild, make a new ticket.
-
-        @user: dict User Data
-        @channel_id: int Channel ID
-        @dm_channel_id: int Private DM Channel ID
-        @guild_id: int Guild ID
-        @source: str Source of the ticket
-
-        returns: ticket
-        """
-
+    def create_ticket(self, author: discord.Member, channel_id: str | None, 
+                        dm_channel_id: str, guild_id: str, source: str) -> dict[str, Any]:
+        """Given a user channel and guild, make a new ticket."""
         col = self._db['modmail_tickets']
-        ticket = col.find_one({'user_id': user['id'], 'status': 'active'})
+        ticket = col.find_one({'author_id': str(author.id), 'status': 'active'})
 
         if ticket is None:
             ticket = {
-                'user_id': user['id'],
-                'status': 'active',
-                'channel_id': dm_channel_id,
-                'original_channel_id': channel_id if channel_id else None,
+                'author_id': str(author.id),
+                'channel_id': channel_id if channel_id else None,
+                'dm_channel_id': dm_channel_id,
                 'guild_id': guild_id,
+                'status': 'active',
                 'created_date': datetime.now().isoformat(),
                 'updated_date': datetime.now().isoformat(),
                 'closed_date': None,
@@ -118,198 +80,122 @@ class Database:
             ticket['_id'] = result.inserted_id
 
         col = self._db['modmail_users']
-        mm_user = col.find_one({'discord_id': user['id']})
-
-        if mm_user is None:
-
-            mm_user = {
-                'discord_id': user['id'],
-                'username': user['username'],
-                'username_handle': user['discriminator'],
-                'avatar': user['avatar'],
+        ticket_author = col.find_one({'discord_id': str(author.id)})
+        if ticket_author is None:
+            ticket_author = {
+                'discord_id': str(author.id),
+                'username': author.name,
+                'username_handle': author.discriminator,
                 'created_date': datetime.now().isoformat(),
                 'updated_date': datetime.now().isoformat()
             }
-
-            result = col.insert_one(mm_user)
-            mm_user['_id'] = result.inserted_id
-
-        ticket['user'] = mm_user
-
+            result = col.insert_one(ticket_author)
+            ticket_author['_id'] = result.inserted_id
+        ticket['author'] = ticket_author
         return ticket
+    
+    def update_ticket(self, ticket_id: str, params: dict[str, Any]) -> dict[str, Any] | None:
+        """Given a ticket, update database with given params."""
+        col = self._db['modmail_tickets']
+        return col.find_one_and_update({'_id': ObjectId(ticket_id)}, {"$set" : params })
 
-    def create_ticket_message(self, ticket: dict, content: str, attachments: Optional[List[dict]] = list(), 
-                              author: dict = dict(), mode: str = 'message') -> dict:
-        """
-        Given a ticket, message and user add an entry to the ticket history.
-
-        @ticket: dict: Ticket information
-        @content: str: message content
-        @author: dict: author data
-
-        returns: dict: history entry
-        """
-
+    def create_ticket_message(self, ticket_id: str, content: str, author: discord.Member,
+                                attachments: list[discord.Attachment] | None = None, mode: str = 'message') -> dict[str, Any]:
+        """Add a new message to an existing ticket."""
         col = self._db['modmail_users']
-
-        user = col.find_one({'discord_id': author['id']})
-
-        if user is None:
+        if col.find_one({'discord_id': str(author.id)}) is None:
             user = {
-                'discord_id': author['id'],
-                'username': author['username'],
-                'username_handle': author['discriminator'],
-                'avatar': author['avatar'],
+                'discord_id': str(author.id),
+                'username': author.name,
+                'username_handle': author.discriminator,
                 'created_date': datetime.now().isoformat(),
                 'updated_date': datetime.now().isoformat()
             }
-
-            result = col.insert_one(user)
-            user['_id'] = result.inserted_id
+            col.insert_one(user)
 
         col = self._db['modmail_history']
         entry = {
-            'ticket_id': ObjectId(ticket['_id']),
-            'user_id': author['id'],
+            'ticket_id': ObjectId(ticket_id),
+            'author_id': str(author.id),
             'message': content,
             'mode': mode,
-            'attachments': list(),
+            'attachments': [],
             'created_date': datetime.now().isoformat(),
             'updated_date': datetime.now().isoformat()
         }
 
+        attachments = attachments or []
         for att in attachments:
             entry['attachments'].append({
-                'content_type': att['content_type'],
-                'filename': att['filename'],
-                'id': att['id'],
-                'size': att['size'],
-                'url': att['url']
+                'id': str(att.id),
+                'filename': att.filename,
+                'content_type': att.content_type,
+                'size': att.size,
+                'url': att.url
             })
 
         result = col.insert_one(entry)
         entry['_id'] = result.inserted_id
-
         return entry
 
-    def lock_ticket(self, ticket_id: int) -> dict:
-        """
-        Given a ticket_id lock a given ticket.
-
-        @ticket_id: string, ticket_id
-
-        returns: ticket
-        """
-
+    def lock_ticket(self, ticket_id: str) -> dict[str, Any]:
+        """Given a ticket_id lock a given ticket."""
         col = self._db['modmail_tickets']
-
         data = {
-            'updated_date': datetime.now().isoformat(),
-            'locked': True
+            'locked': True,
+            'updated_date': datetime.now().isoformat()
         }
-
         result = col.find_one_and_update({'_id': ObjectId(ticket_id)}, {"$set" : data })
-
         return result
 
-    def unlock_ticket(self, ticket_id: int) -> dict:
-        """
-        Given a ticket_id lock a given ticket.
-
-        @ticket_id: string, ticket_id
-
-        returns: ticket
-        """
-
+    def unlock_ticket(self, ticket_id: str) -> dict[str, Any]:
+        """Given a ticket_id lock a given ticket."""
         col = self._db['modmail_tickets']
-
         data = {
-            'updated_date': datetime.now().isoformat(),
-            'locked': False
+            'locked': False,
+            'updated_date': datetime.now().isoformat()
         }
-
         result = col.find_one_and_update({'_id': ObjectId(ticket_id)}, {"$set" : data })
-
         return result
 
-    def close_ticket(self, ticket_id: int, author_id: int, data: dict) -> dict:
-        """
-        Given a ticket_id, author_id and data close a given ticket.
-
-        @ticket_id: string, ticket_id
-        @user_id: discord user_id
-        @data: data to update
-
-        returns: ticket
-        """
-
+    def close_ticket(self, ticket_id: str, author_id: str, data: dict) -> dict[str, Any]:
+        """Given a ticket_id, author_id and data close a given ticket."""
         col = self._db['modmail_tickets']
-
         data['updated_date'] = datetime.now().isoformat()
         data['closed_date'] = datetime.now().isoformat()
         data['closed_user_id'] = author_id
         data['status'] = 'closed'
-
         result = col.find_one_and_update({'_id': ObjectId(ticket_id)}, {"$set" : data })
-
         return result
 
     # Server configuration for start up
-    async def load_server_configuration(self, guild: dict, bot: discord.Client):
-        """
-        Given a guild, load its configuration
-
-        @guild: typeof Discord.Guild
-
-        returns: guild_config
-        """
-
+    async def load_server_configuration(self, guild: discord.Guild, bot: discord.Bot) -> dict[str, Any]:
+        """Given a guild, load its configuration"""
         col = self._db['discord_config']
-
-        guild_info = col.find_one({'guild_id': guild['id']})
-
+        guild_info = col.find_one({'guild_id': str(guild.id)})
         if guild_info is None:
-
-            # get all server info
-            full_info = await bot.http.get_guild(guild['id'])
-
-            # Get default admin roles
+            dc_guild = await bot.fetch_guild(guild.id)
             admin_roles = []
-
-            for role in full_info['roles']:
-                if int(role['permissions']) & 0x0000000008 == 0x0000000008:
-                    admin_roles.append(role['id'])
-
+            for role in dc_guild.roles:
+                # 1 << 3 == 0x8 == administrator
+                if role.permissions.administrator:
+                    admin_roles.append(role.id)
             guild_info = {
-                'guild_id': guild['id'],
-                'name': guild['name'],
+                'guild_id': str(guild.id),
+                'name': guild.name,
                 'command_character': bot.config['discord']['default_command_character'],
-                'modmail_character': bot.config['modmail']['default_command_character'],
-                'allowed_channels': list(),
-                'denied_channels': list(),
+                'modmail_character': bot.config['discord']['default_command_character'],
+                'allowed_channels': [],
+                'denied_channels': [],
                 'admin_roles': admin_roles,
-                'mod_roles': list(),
-                'ban_roles': list(),
+                'mod_roles': [],
+                'ban_roles': [],
                 'log_channel': None,
                 'modmail_channel': None,
                 'override_silent': False,
                 'auto_timeout_on_reenter': True,
-                'joined_date': datetime.now().isoformat()
+                'joined_date': datetime.utcnow().isoformat()
             }
-
             result = col.insert_one(guild_info)
             guild_info['_id'] = result.inserted_id
-
         return guild_info
-
-
-if __name__ == '__main__':
-    import pprint
-
-    config = {
-        'path': 'mongodb://sakurazaki:testpasswd@localhost:27017/?authSource=admin&readPreference=primary&appname=MongoDB%20Compass&ssl=false',
-        'db_name': 'moon2web'
-    }
-
-    conn = get_conn(config['path'])
-    conn.close()

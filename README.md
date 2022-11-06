@@ -43,18 +43,30 @@ To invite the bot to your server you have to copy both the `Applcation ID` and `
 The `Application ID` can be found on top of the `General Information` of the application.
 
 The bot uses the following permissions:
-- Permissions number is: `535529122902`
+- Permissions number is: `1643630685398`
+- `Send Messages`
+- `View Audit Log`
+- `Create Public Threads`
+- `Create Private Threads`
+- `Send Messages in Threads`
 - `Manage Roles`
+- `Manage Channels`
 - `Kick Members`
 - `Ban Members`
 - `View Channels`
-- `Send Messages`
 - `Manage Messages`
+- `Manage Threads`
 - `Embed Links`
 - `Attack Files`
 - `Read Message History`
-- `Mention Everyone`
+- `Manage Webhooks`
+- `Use External Emojis`
+- `Read Messages / View Channels`
+- `Use External Stickers`
+- `Mamage Events`
 - `Add Reactions`
+- `Moderate Members`
+- `Use Slash Commands`
 
 Once ready, edit the following link with `client_id`, and open it in a new tab.
 

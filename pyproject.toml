@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "modmail"
+version = "2.0.0"
+description = "Modmail bot for Moonmoon discord"
+authors = ["Aitor Martin <sakurazaki.setsunita@gmail.com>"]
+license = "GPL 3.0"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+py-cord = "^2.2.2"
+pymongo = "^4.3.2"
+pytz = "^2022.5"
+PyYAML = "^6.0"
+DateTime = "^4.7"
+requests = "^2.28.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
