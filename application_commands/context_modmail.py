@@ -11,7 +11,6 @@ def context_modmail(bot: discord.Bot):
         await context.response.defer(ephemeral=True)
 
         ticket = await bot.modmail.get_ticket(author_id=context.user.id, filter={'status': 'active'})
-        print("Channel: ", context.channel, context.channel.id)
 
         if ticket is not None:
             await bot.modmail.create_ticket_message(ticket, message.content, context.user,
@@ -20,8 +19,8 @@ def context_modmail(bot: discord.Bot):
             description = message.content
             fields = []
             footer = {
-                "text": f"{context.user.name}#{context.user.discriminator} · Ticket ID {ticket['_id']}",
-                "icon_url": context.user.avatar.url
+                "text": f"{message.author.name}#{message.author.discriminator} · Ticket ID {ticket['_id']}",
+                "icon_url": message.author.avatar.url
             }
             thumbnail = None
             if message.attachments:
@@ -113,8 +112,8 @@ def context_modmail(bot: discord.Bot):
         description = message.content
         fields = []
         footer = {
-            "text": f"{context.user.name}#{context.user.discriminator} · Ticket ID {ticket['_id']}",
-            "icon_url": context.user.avatar.url
+            "text": f"{message.author.name}#{message.author.discriminator} · Ticket ID {ticket['_id']}",
+            "icon_url": message.author.avatar.url
         }
         thumbnail = None
         if message.attachments:
