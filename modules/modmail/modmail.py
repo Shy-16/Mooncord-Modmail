@@ -292,7 +292,7 @@ class Modmail:
         if isinstance(user, discord.User):
             user = guild.get_member(user.id)
 
-        url = self._bot.config["api"]["url"] + f'/modmail/tickets/{ticket["_id"]}'
+        url = self._bot.config["modmail"]["public_url"] + f'/modmail/tickets/{ticket["_id"]}'
         fields = [
             {'name': 'Dashboard', 'value': f"You can view full details and work further in the Ticket dashboard:\r\n{url}"},
         ]
