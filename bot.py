@@ -32,7 +32,6 @@ class Bot(discord.Bot):
     ## On error handler
     async def on_error(self, *args, **kwargs):
         exc_err = traceback.format_exc()
-        print(args, kwargs)
         log.error("Bot handled an error on event: {} with error:\r\n{}".format(args, exc_err))
 
     ### Client Events
@@ -43,7 +42,6 @@ class Bot(discord.Bot):
             guild_config = await self.db.load_server_configuration(guild, self)
             self.guild_config[guild.id] = guild_config
             if self.default_guild is None: self.default_guild = guild_config
-            print(f'Guild {guild.id} loaded.')
             logging.info(f'Loaded configuration for guild: {guild.id}.')
         log.info('Finished loading all guild info.')
         log.info("All configuration finished.")
@@ -52,6 +50,10 @@ class Bot(discord.Bot):
         slash_modmail(self)
         context_modmail(self)
         await self.sync_commands()
+        
+    async def on_interaction(self, interaction: discord.Interaction) -> None:
+        await super().on_interaction(interaction)
+        await self.modmail.handle_interaction(interaction)
         
     async def on_message(self, message: discord.Message) -> None:
         """Handle create message event"""
