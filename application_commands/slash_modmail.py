@@ -6,16 +6,15 @@ from discord import option, default_permissions
 
 def slash_modmail(bot: discord.Bot):
     @bot.slash_command(
-        name="modmail",
         description="Create a new ticket to contact staff.",
         guild_ids=[bot.guilds[0].id]
     )
     @default_permissions(send_messages=True)
     @option("description", str, description="Description of the ticket.", required=True)
-    async def handle_modmail_slash(context: discord.ApplicationContext, description: str) -> None:
+    async def modmail(context: discord.ApplicationContext, description: str) -> None:
         await context.response.defer(ephemeral=True)
 
-        ticket = await bot.modmail.get_ticket(user_id=context.user.id, filter={'status': 'active'})
+        ticket = await bot.modmail.get_ticket(author_id=context.user.id, filter={'status': 'active'})
         if ticket is not None:
             await bot.modmail.create_ticket_message(ticket, description, author=context.user)
             footer = {

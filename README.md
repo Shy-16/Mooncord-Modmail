@@ -1,27 +1,22 @@
 # Moonmail
 
-Moderation bot for Mooncord
+Ticket manager for Mooncord
 
 ## Install Instructions
 
 ### Install latest version of Python 3.
 
-Moonmail uses latest version of Python3, at the very least higher than 3.8
-Once ready install all modules:
-- `pip install -r requirements.txt`
+Moonmail uses latest version of Python3, at the very least higher than 3.10.
+Modmail uses poetry as dependency manager.
+Install all modules:
+- `poetry install`
 
 ## Install MongoDB
 
 Moonmail uses latest version of MongoDB. 
 - Configure access user with admin privileges.
 
-By default mongoDB will create non-existing resources on first read, that means you don't need to configure anything. However for the sake of explanation here is the MongoDB structure:
-- Create a new database. By default Moonmail uses `moon2web`
-- Create a 4 new collections. The name of these cannot be changed:
-- - `discord_config`
-- - `users`
-- -  `users_bans`
-- -  `users_strikes`
+By default mongoDB will create non-existing resources on first read, that means you don't need to configure anything.
 
 ## Copy config.yaml and edit it.
 
@@ -34,7 +29,7 @@ The bot requires discord token from a **Bot** user to run, which will be provide
 To get your token create a new Application in the [Discord developer portal](https://discord.com/developers/applications) and then make sure you activate the `Bot` under `Bot` configuration.
 
 Once you have the token, run the bot:
-- `python3 main.py -t <token>`
+- `poetry run python main.py -t <token>`
 
 ## Invite the bot to your server
 
@@ -70,4 +65,4 @@ The bot uses the following permissions:
 
 Once ready, edit the following link with `client_id`, and open it in a new tab.
 
-[https://discord.com/oauth2/authorize?client_id=893906869184237588&permissions=535529253974&scope=bot%20applications.commands](https://discord.com/oauth2/authorize?client_id=893906869184237588&permissions=535529253974&scope=bot%20applications.commands)
+[https://discord.com/oauth2/authorize?client_id=<client_id>&permissions=1643630685398&scope=bot%20applications.commands](https://discord.com/oauth2/authorize?client_id=<client_id>&permissions=1643630685398&scope=bot%20applications.commands)

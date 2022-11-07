@@ -20,7 +20,7 @@ log: logging.Logger = logging.getLogger("discord")
 class Bot(discord.Bot):
     def __init__(self, config: dict) -> None:
         intents = discord.Intents.all()
-        super().__init__(intents=intents)
+        super().__init__(intents=intents, test_guilds=[553454168631934977])
         
         self.config: dict[str, Any] = config
         self.guild_config: dict[int, dict[str, Any]] = {}
@@ -32,6 +32,7 @@ class Bot(discord.Bot):
     ## On error handler
     async def on_error(self, *args, **kwargs):
         exc_err = traceback.format_exc()
+        print(args, kwargs)
         log.error("Bot handled an error on event: {} with error:\r\n{}".format(args, exc_err))
 
     ### Client Events
@@ -50,11 +51,7 @@ class Bot(discord.Bot):
         slash_help(self)
         slash_modmail(self)
         context_modmail(self)
-        
-    async def on_interaction(self, interaction: discord.Interaction) -> None:
-        """Handles incoming interactions"""
-        print(interaction, interaction.application_id)
-        await self.modmail.handle_interaction(interaction)
+        await self.sync_commands()
         
     async def on_message(self, message: discord.Message) -> None:
         """Handle create message event"""

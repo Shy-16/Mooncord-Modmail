@@ -6,12 +6,11 @@ from discord import default_permissions
 
 def slash_help(bot: discord.Bot):
     @bot.slash_command(
-        name="help",
         description="Check Modmail help information.",
         guild_ids=[bot.guilds[0].id]
     )
     @default_permissions(send_messages=True)
-    async def handle_help_slash(context: discord.ApplicationContext) -> None:
+    async def help(context: discord.ApplicationContext) -> None:
         embed = {
             "type": "rich",
             "title": "Modmail Help",

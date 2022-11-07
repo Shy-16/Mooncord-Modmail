@@ -5,15 +5,12 @@ from discord import default_permissions
 
 
 def context_modmail(bot: discord.Bot):
-    @bot.message_command(
-        name="modmail",
-        guild_ids=[bot.guilds[0].id]
-    )
+    @bot.message_command(guild_ids=[bot.guilds[0].id])
     @default_permissions(send_messages=True)
-    async def handle_modmail_slash(context: discord.ApplicationContext, message: discord.Message) -> None:
+    async def modmail(context: discord.ApplicationContext, message: discord.Message) -> None:
         await context.response.defer(ephemeral=True)
 
-        ticket = await bot.modmail.get_ticket(user_id=context.user.id, filter={'status': 'active'})
+        ticket = await bot.modmail.get_ticket(author_id=context.user.id, filter={'status': 'active'})
         print("Channel: ", context.channel, context.channel.id)
 
         if ticket is not None:
