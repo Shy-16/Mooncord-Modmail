@@ -1,0 +1,18 @@
+# YAML
+discord:
+  default_server_id: <server_id>
+  application_id: <application_id>
+  permissions: 268560454 # modify this value as required
+  default_command_character: '=!'
+
+database:
+  path: 'mongodb://<username>:<password>@localhost:27017/?authSource=admin&readPreference=primary&ssl=false'
+  db_name: 'mooncord_databases'
+
+api:
+  url: 'http://localhost:80'
+  api_key: ''
+
+modmail:
+  public_url: 'http://localhost:80'
+  default_command_character: '='
