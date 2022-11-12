@@ -85,7 +85,7 @@ class Database:
             ticket_author = {
                 'discord_id': str(author.id),
                 'username': author.name,
-                'username_handle': author.discriminator,
+                'discriminator': author.discriminator,
                 'created_date': datetime.now().isoformat(),
                 'updated_date': datetime.now().isoformat()
             }
@@ -107,7 +107,7 @@ class Database:
             user = {
                 'discord_id': str(author.id),
                 'username': author.name,
-                'username_handle': author.discriminator,
+                'discriminator': author.discriminator,
                 'created_date': datetime.now().isoformat(),
                 'updated_date': datetime.now().isoformat()
             }
