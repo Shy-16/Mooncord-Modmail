@@ -4,7 +4,7 @@ import discord
 from discord import option, default_permissions
 
 
-def slash_modmail(bot: discord.Bot):
+def slash_modmail(bot: discord.AutoShardedBot):
     @bot.slash_command(
         description="Create a new ticket to contact staff.",
         guild_ids=[bot.guilds[0].id]
@@ -23,7 +23,7 @@ def slash_modmail(bot: discord.Bot):
             }
             await bot.send_embed_message(int(ticket['modmail_channel_id']), "Message received", description, footer=footer)
 
-            # Let the user know the message was relied properly.
+            # Let the user know the message was relayed properly.
             embed = {
                 "type": "rich",
                 "title": "Ticket updated",
@@ -78,7 +78,7 @@ def slash_modmail(bot: discord.Bot):
         await context.send_followup(embed=discord.Embed.from_dict(embed), ephemeral=True)
         
         # Create channel in server
-        modmail_channel = await bot.modmail.create_modmail_channel(ticket, context.user)
+        modmail_channel = await bot.modmail.create_modmail_channel(ticket, context.guild_id, context.user)
         ticket["modmail_channel_id"] = str(modmail_channel.id)
         
         # create DM message as followup

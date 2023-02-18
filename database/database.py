@@ -191,7 +191,10 @@ class Database:
                 'mod_roles': [],
                 'ban_roles': [],
                 'log_channel': None,
+                'modmail_category': None,
                 'modmail_channel': None,
+                'modmail_forum': None,
+                'modmail_mode': "channels",
                 'override_silent': False,
                 'auto_timeout_on_reenter': True,
                 'joined_date': datetime.utcnow().isoformat()
@@ -199,3 +202,9 @@ class Database:
             result = col.insert_one(guild_info)
             guild_info['_id'] = result.inserted_id
         return guild_info
+
+    def update_server_configuration(self, query: dict[str, Any], data: dict[str, Any]) -> dict[str, Any]:
+        """Updates server configuration"""
+        col = self._db['discord_config']
+        result = col.find_one_and_update(query, {"$set" : data })
+        return result

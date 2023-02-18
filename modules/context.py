@@ -26,28 +26,25 @@ class CommandContext:
 
         self.stickers = message.stickers
 
+        self.guild_config = self._bot.guild_config[self.guild.id]
         self.is_admin = self._is_admin()
         self.is_mod = self._is_mod()
-        self.log_channel = int(self._bot.guild_config[self.guild.id]['log_channel'])
-        self.command_character = self._bot.guild_config[self.guild.id]['command_character']
-        self.modmail_category = int(self._bot.guild_config[self.guild.id]['modmail_category'])
-        self.modmail_channel = int(self._bot.guild_config[self.guild.id]['modmail_channel'])
-        self.modmail_character = self._bot.guild_config[self.guild.id]['modmail_character']
-        self.ban_roles = [discord.Object(int(role)) for role in self._bot.guild_config[self.guild.id]['ban_roles']]
+        self.log_channel = int(self.guild_config['log_channel'])
+        self.command_character = self.guild_config['command_character']
+        self.modmail_category = int(self.guild_config['modmail_category'])
+        self.modmail_channel = int(self.guild_config['modmail_channel'])
+        self.modmail_character = self.guild_config['modmail_character']
+        self.modmail_mode = self.guild_config['modmail_mode']
+        self.modmail_forum = self.guild_config['modmail_forum']
+        self.ban_roles = [discord.Object(int(role)) for role in self.guild_config['ban_roles']]
 
     def _is_admin(self):
         """Check all roles for admin privileges"""
-        for role in self.author.roles:
-            if str(role.id) in self._bot.guild_config[self.guild.id]['admin_roles']:
-                return True
-        return False
+        return any(str(role.id) in self.guild_config['admin_roles'] for role in self.author.roles)
 
     def _is_mod(self):
         """Check all roles for mod privileges"""
-        for role in self.author.roles:
-            if str(role.id) in self._bot.guild_config[self.guild.id]['mod_roles']:
-                return True
-        return False
+        return any(str(role.id) in self.guild_config['mod_roles'] for role in self.author.roles)
 
 
 class DMContext:
@@ -61,8 +58,9 @@ class DMContext:
         self.mentions = message.mentions
         self.channel_mentions = message.channel_mentions
 
-        self.log_channel = int(self._bot.guild_config[self.guild.id]['log_channel'])
-        self.command_character = self._bot.guild_config[self.guild.id]['command_character']
-        self.modmail_category = int(self._bot.guild_config[self.guild.id]['modmail_category'])
-        self.modmail_channel = int(self._bot.guild_config[self.guild.id]['modmail_channel'])
-        self.modmail_character = self._bot.guild_config[self.guild.id]['modmail_character']
+        self.guild_config = self._bot.guild_config[self.guild.id]
+        self.log_channel = int(self.guild_config['log_channel'])
+        self.command_character = self.guild_config['command_character']
+        self.modmail_category = int(self.guild_config['modmail_category'])
+        self.modmail_channel = int(self.guild_config['modmail_channel'])
+        self.modmail_character = self.guild_config['modmail_character']

@@ -3,12 +3,15 @@
 ## Modmail Module ##
 # Interacts with Modmail functionality through API #
 
+from __future__ import annotations
+
 import asyncio
 
 import discord
 from typing import Any
 
 from modules.context import CommandContext, DMContext
+from .modmail_modules import channels, forums
 from .commands import (
     Help,
     CloseTicket,
@@ -20,6 +23,9 @@ from .components import ModmailModal
 
 
 class Modmail:
+    CHANNELS_SETTING = 'channels'
+    FORUMS_SETTING = 'forums'
+
     def __init__(self, bot: discord.Bot) -> None:
         self._bot = bot
         self._db = bot.db
@@ -188,7 +194,7 @@ class Modmail:
                     fields=fields, footer=footer)
 
                 # Create channel in server
-                modmail_channel = await self.create_modmail_channel(ticket, message.author)
+                modmail_channel = await self.create_modmail_channel(ticket, message.guild.id, message.author)
                 ticket["modmail_channel_id"] = str(modmail_channel.id)
                 
                 # Rely information to server
@@ -280,39 +286,13 @@ class Modmail:
         return ticket
     
     # Helpers
-    async def create_modmail_channel(self, ticket: dict[str, Any], user: discord.User | discord.Member) -> discord.TextChannel:
+    async def create_modmail_channel(self, ticket: dict[str, Any], guild_id: int,
+                                     user: discord.User | discord.Member) -> discord.TextChannel | discord.Thread:
         """Creeates a channel with given ticket_id name"""
-        guild: discord.Guild = self._bot.get_guild(int(ticket['guild_id']))
-        guild_config = self._bot.guild_config[guild.id]
-        category: discord.CategoryChannel = guild.get_channel(int(guild_config['modmail_category']))
-        modmail_channel: discord.TextChannel = guild.get_channel(int(guild_config['modmail_channel']))
-        ticket_channel: discord.TextChannel = await guild.create_text_channel(str(ticket['_id']), category=category)
-        self._db.update_ticket(ticket["_id"], {"modmail_channel_id": str(ticket_channel.id)})
-        
-        if isinstance(user, discord.User):
-            user = guild.get_member(user.id)
-
-        url = self._bot.config["modmail"]["public_url"] + f'/modmail/tickets/{ticket["_id"]}'
-        fields = [
-            {'name': 'Dashboard', 'value': f"You can view full details and work further in the Ticket dashboard:\r\n{url}"},
-        ]
-        footer = {
-            'text': f"{user.name}#{user.discriminator} · Ticket ID {ticket['_id']}",
-            'icon_url': user.avatar.url
-        }
-        await self._bot.send_embed_message(modmail_channel, "New Ticket", color=2067276, fields=fields, footer=footer)
-
-        roles = " ".join([f"<@&{role.id}>" for role in user.roles])
-        description = f"Type a message in this channel to reply. Messages starting with the server prefix `{guild_config['modmail_character']}` " \
-                    + f"are ignored, and can be used for staff discussion. User the command `{guild_config['modmail_character']}close <reason:optional>` to " \
-                    + "close the ticket."
-        fields = [
-            {'name': 'User', 'value': f"<@{user.id}> ({user.id})", 'inline': True},
-            {'name': 'Roles', 'value': roles, 'inline': True},
-            {'name': 'Dashboard', 'value': f"You can view full details and work further in the Ticket dashboard:\r\n{url}"}
-        ]
-        await self._bot.send_embed_message(ticket_channel, "New Ticket", description, color=2067276, fields=fields, footer=footer)
-        return ticket_channel
+        setting = self._bot.guild_config[guild_id]['modmail_mode']
+        if setting == self.FORUMS_SETTING:
+            return await forums.create_modmail_channel(self, ticket, user)
+        return await channels.create_modmail_channel(self, ticket, user)
 
     # Interactions
     def create_interaction_modal(self) -> discord.ui.Modal:
