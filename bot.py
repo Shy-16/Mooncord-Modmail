@@ -11,13 +11,13 @@ import discord
 
 from modules import Modmail
 from database import Database
-from application_commands import slash_help, slash_modmail, context_modmail
+from application_commands import slash_help, slash_modmail, context_modmail, config_slash
 
 
 log: logging.Logger = logging.getLogger("discord")
 
 
-class Bot(discord.Bot):
+class Bot(discord.AutoShardedBot):
     def __init__(self, config: dict) -> None:
         intents = discord.Intents.all()
         super().__init__(intents=intents, test_guilds=[553454168631934977])
@@ -49,7 +49,16 @@ class Bot(discord.Bot):
         slash_help(self)
         slash_modmail(self)
         context_modmail(self)
+        config_slash(self)
         await self.sync_commands()
+        
+    async def reload_config(self) -> None:
+        """Reloads configuration from database"""
+        self.default_guild = None
+        for guild in self.guilds:
+            guild_config = await self.db.load_server_configuration(guild, self)
+            self.guild_config[guild.id] = guild_config
+            if self.default_guild is None: self.default_guild = guild_config
         
     async def on_interaction(self, interaction: discord.Interaction) -> None:
         await super().on_interaction(interaction)

@@ -5,6 +5,9 @@
 
 from modules.context import CommandContext
 from modules.command import Command, verify_permission
+from modules.modmail.modmail_constants import MODMAIL_FORUMS_TYPE
+from modules.modmail.modmail_modules.forums import unlock_forums_thread
+from modules.modmail.modmail_modules.channels import unlock_channel
 
 
 class Unlock(Command):
@@ -16,10 +19,8 @@ class Unlock(Command):
         if not ticket:
             description = f"Couldn't find any associated tickets to this channel. ID: {context.channel.id} · Name: {context.channel.name}"
             await self._bot.send_embed_message(context.channel, description, color=0xb30000)
-
-
         await self._module.unlock_ticket(ticket)
-        await context.channel.edit(name=context.channel.name[2:], reason="Unlocked channel")
-        await self._bot.send_embed_message(context.channel, "Ticket unlocked 🔓", 
-            f"Messages will be relied to user again until channel is locked.\r\n\
-            You can still use {context.modmail_character} to force ignore messages sent in this channel.", color=0xff8409)
+        if context.modmail_mode == MODMAIL_FORUMS_TYPE:
+            await unlock_forums_thread(self._bot, context)
+        else:
+            await unlock_channel(self._bot, context)

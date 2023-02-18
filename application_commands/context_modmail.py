@@ -40,7 +40,7 @@ def context_modmail(bot: discord.Bot):
             if has_video:
                 await bot.send_message(ticket['modmail_channel_id'], message.attachments[0].url)
 
-            # Let the user know the message was relied properly.
+            # Let the user know the message was relayed properly.
             embed = {
                 "type": "rich",
                 "title": "Ticket updated",
@@ -95,7 +95,7 @@ def context_modmail(bot: discord.Bot):
         await context.send_followup(embed=discord.Embed.from_dict(embed), ephemeral=True)
 
         # Create channel in server
-        modmail_channel = await bot.modmail.create_modmail_channel(ticket, context.user)
+        modmail_channel = await bot.modmail.create_modmail_channel(ticket, context.guild_id, context.user)
         ticket["modmail_channel_id"] = str(modmail_channel.id)
         
         # create DM message as followup

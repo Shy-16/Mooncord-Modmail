@@ -5,6 +5,9 @@
 
 from modules.context import CommandContext
 from modules.command import Command, verify_permission
+from modules.modmail.modmail_constants import MODMAIL_FORUMS_TYPE
+from modules.modmail.modmail_modules.forums import delete_forums_thread
+from modules.modmail.modmail_modules.channels import delete_channel
 
 
 class CloseTicket(Command):
@@ -44,4 +47,7 @@ class CloseTicket(Command):
         except:
             pass
         await self._bot.send_embed_message(int(self._bot.guild_config[context.guild.id]['modmail_channel']), "Ticket closed", f"Ticket {ticket['_id']} was closed.", color=10038562, fields=fields, footer=footer)
-        await context.channel.delete()
+        if context.modmail_mode == MODMAIL_FORUMS_TYPE:
+            await delete_forums_thread(self._bot, context)
+        else:
+            await delete_channel(context)

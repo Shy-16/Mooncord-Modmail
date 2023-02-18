@@ -30,7 +30,7 @@ class ModmailModal(discord.ui.Modal):
             }
             await self._bot.send_embed_message(int(ticket['modmail_channel_id']), "Message received", message_content, footer=footer)
 
-            # Let the user know the message was relied properly.
+            # Let the user know the message was relayed properly.
             embed = {
                 "type": "rich",
                 "title": "Ticket updated",
@@ -85,7 +85,7 @@ class ModmailModal(discord.ui.Modal):
         await interaction.followup.send(embed=discord.Embed.from_dict(embed), ephemeral=True)
 
         # Create channel in server
-        modmail_channel = await self._bot.modmail.create_modmail_channel(ticket, interaction.user)
+        modmail_channel = await self._bot.modmail.create_modmail_channel(ticket, interaction.guild_id, interaction.user)
         ticket["modmail_channel_id"] = str(modmail_channel.id)
 
         # create DM message as followup
