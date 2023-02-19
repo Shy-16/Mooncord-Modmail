@@ -16,7 +16,9 @@ async def create_modmail_channel(modmail, ticket: dict[str, Any], user: discord.
     guild: discord.Guild = modmail._bot.get_guild(int(ticket['guild_id']))
     guild_config = modmail._bot.guild_config[guild.id]
     forum_channel: discord.ForumChannel = guild.get_channel(int(guild_config['modmail_forum']))
-    tags = [tag for tag in forum_channel.available_tags if "new" in tag.name]
+    tags = []
+    if hasattr(forum_channel, "available_tags"):
+        tags = [tag for tag in forum_channel.available_tags if "new" in tag.name]
     
     if isinstance(user, discord.User):
         user = guild.get_member(user.id)
@@ -50,15 +52,15 @@ async def create_modmail_channel(modmail, ticket: dict[str, Any], user: discord.
 
 async def lock_forums_thread(bot: discord.AutoShardedBot, context: CommandContext) -> None:
     """Locks a channel and applies a tag"""
-    #tags = [tag for tag in context.channel.parent.available_tags if "lock" in tag.name]
-    await context.channel.edit(name="🔒 " + context.channel.name, reason="Locked channel")
+    tags = [tag for tag in context.channel.parent.available_tags if "lock" in tag.name]
+    await context.channel.edit(name="🔒 " + context.channel.name, reason="Locked channel", applied_tags=tags)
     await bot.send_embed_message(context.channel, "Ticket locked 🔒", 
         "No messages will be relayed to user until channel is unlocked again.", color=0xff8409)
 
 
 async def unlock_forums_thread(bot: discord.AutoShardedBot, context: CommandContext) -> None:
     """Unlocks a channel"""
-    await context.channel.edit(name=context.channel.name[2:], reason="Unlocked channel")
+    await context.channel.edit(name=context.channel.name[2:], reason="Unlocked channel", applied_tags=[])
     await bot.send_embed_message(context.channel, "Ticket unlocked 🔓", 
         f"Messages will be relayed to user again until channel is locked.\r\n\
         You can still use {context.modmail_character} to force ignore messages sent in this channel.", color=0xff8409)

@@ -194,7 +194,7 @@ class Modmail:
                     fields=fields, footer=footer)
 
                 # Create channel in server
-                modmail_channel = await self.create_modmail_channel(ticket, ticket["guild_id"], message.author)
+                modmail_channel = await self.create_modmail_channel(ticket, int(ticket["guild_id"]), message.author)
                 ticket["modmail_channel_id"] = str(modmail_channel.id)
                 
                 # Rely information to server
