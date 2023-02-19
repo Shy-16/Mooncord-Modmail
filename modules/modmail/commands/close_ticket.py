@@ -44,10 +44,12 @@ class CloseTicket(Command):
 
         try:
             await self._bot.send_embed_dm(int(ticket['author_id']), "Ticket closed", f"Ticket {ticket['_id']} was closed.", color=10038562, fields=fields, footer=footer)
-        except:
+        except Exception:
             pass
-        await self._bot.send_embed_message(int(self._bot.guild_config[context.guild.id]['modmail_channel']), "Ticket closed", f"Ticket {ticket['_id']} was closed.", color=10038562, fields=fields, footer=footer)
         if context.modmail_mode == MODMAIL_FORUMS_TYPE:
             await delete_forums_thread(self._bot, context)
         else:
+            await self._bot.send_embed_message(int(self._bot.guild_config[context.guild.id]['modmail_channel']),
+                                                "Ticket closed", f"Ticket {ticket['_id']} was closed.", color=10038562, 
+                                                fields=fields, footer=footer)
             await delete_channel(context)

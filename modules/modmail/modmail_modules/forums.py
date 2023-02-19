@@ -68,4 +68,5 @@ async def unlock_forums_thread(bot: discord.AutoShardedBot, context: CommandCont
 
 async def delete_forums_thread(bot: discord.AutoShardedBot, context: CommandContext) -> None:
     """Deletes a channel"""
-    await context.channel.edit(archived=True, reason="Ticket resolved")
+    tags = [tag for tag in context.channel.parent.available_tags if "resolved" in tag.name]
+    await context.channel.edit(archived=True, reason="Ticket resolved", applied_tags=tags)
