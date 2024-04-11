@@ -13,7 +13,7 @@ This application was built with Ubuntu specifically in mind, but may run well on
 Moonmail uses latest version of Python3, at the very least higher than 3.10.
 2. Install [pipx](https://github.com/pypa/pipx)
 3. Install [Poetry](https://python-poetry.org/docs/#installation) using pipx
-4. run `poetry install`
+4. run `poetry install --no-root`
 
 ### Install MongoDB
 
