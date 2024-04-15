@@ -4,40 +4,47 @@ Ticket manager for Mooncord
 
 ## Install Instructions
 
-### Install latest version of Python 3.
+If you are on Windows, install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install). This is a first part linux VM inside of windows which operates seemlessly.
+
+This application was built with Ubuntu specifically in mind, but may run well on other platforms.
+
+### Python
 
 Moonmail uses latest version of Python3, at the very least higher than 3.10.
-Modmail uses poetry as dependency manager.
-Install all modules:
-- `poetry install`
+2. Install [pipx](https://github.com/pypa/pipx)
+3. Install [Poetry](https://python-poetry.org/docs/#installation) using pipx
+4. run `poetry install --no-root`
 
-## Install MongoDB
+### Install MongoDB
 
-Moonmail uses latest version of MongoDB. 
+Moonmail uses latest version of MongoDB.
+
 - Configure access user with admin privileges.
 
 By default mongoDB will create non-existing resources on first read, that means you don't need to configure anything.
 
-## Copy config.yaml and edit it.
+### Copy config.yaml and edit it
 
 Copy `config.yaml` from `config_example` to root folder (where `main.py` is located).
 Open it and configure the file.
 
-## Run the bot
+### Run the bot
 
-The bot requires discord token from a **Bot** user to run, which will be provided within the command parameters. 
+The bot requires discord token from a **Bot** user to run, which will be provided within the command parameters.
 To get your token create a new Application in the [Discord developer portal](https://discord.com/developers/applications) and then make sure you activate the `Bot` under `Bot` configuration.
 
 Once you have the token, run the bot:
+
 - `poetry run python main.py -t <token>`
 
-## Invite the bot to your server
+### Invite the bot to your server
 
 To invite the bot to your server you have to copy both the `Applcation ID` and `Permissions` from the bot, and edit them into the invite link.
 
 The `Application ID` can be found on top of the `General Information` of the application.
 
 The bot uses the following permissions:
+
 - Permissions number is: `1643630685398`
 - `Send Messages`
 - `View Audit Log`
