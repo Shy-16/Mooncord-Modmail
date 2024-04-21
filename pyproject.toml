@@ -5,6 +5,7 @@ description = "Modmail bot for Moonmoon discord"
 authors = ["Aitor Martin <sakurazaki.setsunita@gmail.com>"]
 license = "GPL 3.0"
 readme = "README.md"
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.10"
