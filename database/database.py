@@ -197,7 +197,7 @@ class Database:
                 'modmail_mode': "channels",
                 'override_silent': False,
                 'auto_timeout_on_reenter': True,
-                'joined_date': datetime.utcnow().isoformat()
+                'joined_date': datetime.now().isoformat()
             }
             result = col.insert_one(guild_info)
             guild_info['_id'] = result.inserted_id
