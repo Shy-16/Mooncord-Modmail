@@ -44,7 +44,7 @@ async def create_modmail_channel(modmail, ticket: dict[str, Any], user: discord.
         }
     }
 
-    thread_name = f"{user.name} - {modmail._db.get_users_ticket_count(ticket.author_id) + 1}"
+    thread_name = f"{user.name} - {modmail._db.get_users_ticket_count(ticket['author_id']) + 1}"
     
     ticket_channel: discord.Thread = await forum_channel.create_thread(thread_name, embed=discord.Embed.from_dict(embed), applied_tags=tags)
     modmail._db.update_ticket(ticket["_id"], {"modmail_channel_id": str(ticket_channel.id), "modmail_thread_name": thread_name})
