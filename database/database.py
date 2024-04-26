@@ -39,6 +39,11 @@ class Database:
         """Close connection to database"""
         self._conn.close()
 
+    def get_userid_ticket_count(self, user_id: str) -> int:
+        """Given a user_id, return the number of tickets they have."""
+        col = self._db['modmail_tickets']
+        return col.count_documents({'author_id': user_id})
+
     # Ticket related
     def get_ticket(self, params: dict[str, Any]) -> dict[str, Any] | None:
         """Given search parameters, return ticket associated to it"""
