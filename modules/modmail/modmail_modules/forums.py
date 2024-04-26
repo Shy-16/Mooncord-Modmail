@@ -19,7 +19,7 @@ async def create_modmail_channel(modmail, ticket: dict[str, Any], user: discord.
     tags = []
     if hasattr(forum_channel, "available_tags"):
         tags = [tag for tag in forum_channel.available_tags if "new" in tag.name]
-    
+
     if isinstance(user, discord.User):
         user = guild.get_member(user.id)
 
@@ -44,10 +44,9 @@ async def create_modmail_channel(modmail, ticket: dict[str, Any], user: discord.
         }
     }
 
-    thread_name = f"{user.name} - {modmail._db.get_users_ticket_count(user._id)}"
+    thread_name = f"{user.name} - {modmail._db.get_users_ticket_count(ticket.author_id) + 1}"
     
-    ticket_channel: discord.Thread = \
-        await forum_channel.create_thread(thread_name, embed=discord.Embed.from_dict(embed), applied_tags=tags)
+    ticket_channel: discord.Thread = await forum_channel.create_thread(thread_name, embed=discord.Embed.from_dict(embed), applied_tags=tags)
     modmail._db.update_ticket(ticket["_id"], {"modmail_channel_id": str(ticket_channel.id), "modmail_thread_name": thread_name})
     return ticket_channel
 
