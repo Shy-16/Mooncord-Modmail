@@ -25,7 +25,7 @@ class ModmailModal(discord.ui.Modal):
             # if the user has a ticket, simply add the new request as a message
             await self._bot.modmail.create_ticket_message(ticket, message_content, author=interaction.user)
             footer = {
-                "text": f"{interaction.user.name}#{interaction.user.discriminator} · Ticket ID {ticket['_id']}",
+                "text": f"{interaction.user.name} · Ticket ID {ticket['_id']}",
                 "icon_url": interaction.user.avatar.url
             }
             await self._bot.send_embed_message(int(ticket['modmail_channel_id']), "Message received", message_content, footer=footer)
@@ -99,7 +99,7 @@ class ModmailModal(discord.ui.Modal):
         
         # Relay information to server
         footer = {
-            "text": f"{interaction.user.name}#{interaction.user.discriminator} · Ticket ID {ticket['_id']}",
+            "text": f"{interaction.user.name} · Ticket ID {ticket['_id']}",
             "icon_url": interaction.user.avatar.url
         }
         await self._bot.send_embed_message(modmail_channel, "Message received", message_content,

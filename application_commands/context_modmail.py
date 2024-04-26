@@ -19,7 +19,7 @@ def context_modmail(bot: discord.Bot):
             description = message.content
             fields = []
             footer = {
-                "text": f"{message.author.name}#{message.author.discriminator} · Ticket ID {ticket['_id']}",
+                "text": f"{message.author.name} · Ticket ID {ticket['_id']}",
                 "icon_url": message.author.avatar.url
             }
             thumbnail = None
@@ -112,7 +112,7 @@ def context_modmail(bot: discord.Bot):
         description = message.content
         fields = []
         footer = {
-            "text": f"{message.author.name}#{message.author.discriminator} · Ticket ID {ticket['_id']}",
+            "text": f"{message.author.name} · Ticket ID {ticket['_id']}",
             "icon_url": message.author.avatar.url
         }
         thumbnail = None

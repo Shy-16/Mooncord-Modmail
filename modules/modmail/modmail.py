@@ -99,7 +99,7 @@ class Modmail:
         # Then rely message in DMs
         if message.content:
             fields = [
-                {'name': f"{message.author.name}#{message.author.discriminator}", 'value': message.content, 'inline': False}
+                {'name': f"{message.author.name}", 'value': message.content, 'inline': False}
             ]
             footer = {'text': f"{message.guild.name} · Ticket ID {ticket['_id']}"}
             try:
@@ -199,7 +199,7 @@ class Modmail:
                 
                 # Rely information to server
                 footer = {
-                    "text": f"{ticket_message.author.name}#{ticket_message.author.discriminator} · Ticket ID {ticket['_id']}",
+                    "text": f"{ticket_message.author.name} · Ticket ID {ticket['_id']}",
                     "icon_url": ticket_message.author.avatar.url
                 }
                 await self._bot.send_embed_message(modmail_channel, "Message received", ticket_message.content,
@@ -216,7 +216,7 @@ class Modmail:
 
         # rely information
         footer = {
-            "text": f"{message.author.name}#{message.author.discriminator} · Ticket ID {ticket['_id']}",
+            "text": f"{message.author.name} · Ticket ID {ticket['_id']}",
             "icon_url": message.author.avatar.url
         }
         await self._bot.send_embed_message(int(ticket['modmail_channel_id']), "Message received", message.content,

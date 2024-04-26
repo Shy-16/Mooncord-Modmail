@@ -39,7 +39,7 @@ async def create_modmail_channel(modmail, ticket: dict[str, Any], user: discord.
             {'name': 'Dashboard', 'value': f"You can view full details and work further in the Ticket dashboard:\r\n{url}"}
         ],
         "footer": {
-            'text': f"{user.name}#{user.discriminator} · Ticket ID {ticket['_id']}",
+            'text': f"{user.name} · Ticket ID {ticket['_id']}",
             'icon_url': user.avatar.url
         }
     }

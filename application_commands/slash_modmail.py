@@ -18,7 +18,7 @@ def slash_modmail(bot: discord.AutoShardedBot):
         if ticket is not None:
             await bot.modmail.create_ticket_message(ticket, description, author=context.user)
             footer = {
-                "text": f"{context.user.name}#{context.user.discriminator} · Ticket ID {ticket['_id']}",
+                "text": f"{context.user.name} · Ticket ID {ticket['_id']}",
                 "icon_url": context.user.avatar.url
             }
             await bot.send_embed_message(int(ticket['modmail_channel_id']), "Message received", description, footer=footer)
@@ -92,7 +92,7 @@ def slash_modmail(bot: discord.AutoShardedBot):
         
         # Relay information to server
         footer = {
-            "text": f"{context.user.name}#{context.user.discriminator} · Ticket ID {ticket['_id']}",
+            "text": f"{context.user.name} · Ticket ID {ticket['_id']}",
             "icon_url": context.user.avatar.url
         }
         await bot.send_embed_message(modmail_channel, "Message received", description,
