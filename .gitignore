@@ -40,3 +40,6 @@ venv/
 # Run bat made for development
 start.bat
 git_push.bat
+
+.env
+token.txt
