@@ -54,6 +54,11 @@ class Database:
         ticket['author'] = col.find_one({'discord_id': ticket['author_id']})
         return ticket
 
+    def get_users_ticket_count(self, user_id: str) -> int:
+        """Given a user_id, return the number of total tickets."""
+        col = self._db['modmail_tickets']
+        return col.count_documents({'author_id': user_id})
+
     def create_ticket(self, author: discord.Member, channel_id: str | None, 
                         dm_channel_id: str, guild_id: str, source: str) -> dict[str, Any]:
         """Given a user channel and guild, make a new ticket."""
