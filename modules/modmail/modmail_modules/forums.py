@@ -43,10 +43,13 @@ async def create_modmail_channel(modmail, ticket: dict[str, Any], user: discord.
             'icon_url': user.avatar.url
         }
     }
-    
+
+    channelName = user.name + ' #' + modmail._db.get_userid_ticket_count(user.id)
+
     ticket_channel: discord.Thread = \
-        await forum_channel.create_thread(str(ticket['_id']), embed=discord.Embed.from_dict(embed), applied_tags=tags)
+        await forum_channel.create_thread(channelName, embed=discord.Embed.from_dict(embed), applied_tags=tags)
     modmail._db.update_ticket(ticket["_id"], {"modmail_channel_id": str(ticket_channel.id)})
+    modmail._db.update_ticket(ticket["_id"], {"modmail_channel_name": channelName})
     return ticket_channel
 
 
